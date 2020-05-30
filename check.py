@@ -32,8 +32,13 @@ for c in gamestate['country'][0].values():
 
     tech = c['tech_status'][0]
     for t in ['physics', 'society', 'engineering']:
-        researching = tech[t+'_queue'][0][0]['technology'][0]
-        techs_countries[researching].add(name)
+        queue=t+'_queue'
+        if queue not in tech:
+            continue
+        for item in tech[queue][0][0]:
+            if 'technology' in item:
+                researching = item['technology'][0]
+                techs_countries[researching].add(name)
 
     if 'timed_modifier' not in c:
         continue
