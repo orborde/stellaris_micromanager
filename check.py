@@ -27,6 +27,9 @@ for c in gamestate['country'][0].values():
     if name not in TARGET_COUNTRIES:
         continue
 
+    if 'timed_modifier' not in c:
+        continue
+
     timed_modifiers = c['timed_modifier']
     ci_mod = list(filter(lambda m: m['modifier'][0] == 'curator_insight', timed_modifiers))
     assert len(ci_mod) in [0,1]
