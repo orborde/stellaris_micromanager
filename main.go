@@ -1,8 +1,11 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"flag"
+	"io"
 	"log"
 	"os"
 	"stellaris_tools/parser"
@@ -67,15 +70,44 @@ func translateExpression(expr *parser.ExpressionContext) interface{} {
 	}
 	return result
 }
+
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadGamestate(infile string) string {
+	zf, err := zip.OpenReader(infile)
+	must(err)
+	defer zf.Close()
+
+	for _, header := range zf.File {
+		if header.Name == "gamestate" {
+			rc, err := header.Open()
+			must(err)
+			defer rc.Close()
+
+			var buf bytes.Buffer
+			_, err = io.Copy(&buf, rc)
+			must(err)
+
+			return buf.String()
+		}
+	}
+
+	panic("failed to find gamestate")
+}
+
 func main() {
 	infile := flag.String("infile", "", "")
 	flag.Parse()
 
-	log.Println("load/parse")
-	is, err := antlr.NewFileStream(*infile)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Println("load")
+	data := loadGamestate(*infile)
+
+	log.Println("parse")
+	is := antlr.NewInputStream(data)
 	lexer := parser.NewGamestateLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	p := parser.NewGamestateParser(stream)
