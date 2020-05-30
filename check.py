@@ -14,8 +14,8 @@ with open(args.infile) as i:
 
 
 TARGET_COUNTRIES={
-    '"Unified Consciousness"',
-    '"CUDDLE PUDDLE"',
+    "Unified Consciousness",
+    "CUDDLE PUDDLE",
 }
 
 for c in gamestate['country'][0].values():
@@ -28,7 +28,7 @@ for c in gamestate['country'][0].values():
         continue
 
     timed_modifiers = c['timed_modifier']
-    ci_mod = list(filter(lambda m: m['modifier'][0] == '"curator_insight"', timed_modifiers))
+    ci_mod = list(filter(lambda m: m['modifier'][0] == 'curator_insight', timed_modifiers))
     assert len(ci_mod) in [0,1]
     if len(ci_mod) == 0:
         print(name, 'lacks Curator Insight! :(')

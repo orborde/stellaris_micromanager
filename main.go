@@ -34,13 +34,21 @@ func isMap(expr *parser.ExpressionContext) bool {
 	return terminal.GetText() == "="
 }
 
+func unwrapString(expr *parser.ExpressionContext) string {
+	raw := expr.STRING().GetText()
+	if raw[0] != '"' || raw[len(raw)-1] != '"' {
+		log.Fatal("bad string spec: ", expr.STRING().GetText())
+	}
+	return raw[1 : len(raw)-1]
+}
+
 func translateExpression(expr *parser.ExpressionContext) interface{} {
 	if expr.STRING() != nil {
-		return expr.STRING().GetText()
+		return unwrapString(expr)
 	}
 
 	if expr.ATOM() != nil {
-		return expr.ATOM().GetText()
+		return expr.ATOM().GetSymbol().GetText()
 	}
 
 	if isMap(expr) {
