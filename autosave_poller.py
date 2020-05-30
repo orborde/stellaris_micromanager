@@ -15,18 +15,17 @@ args = parser.parse_args()
 interval=float(args.interval)
 
 def execute(path):
-    jsondata = subprocess.check_output(['./sav2json', path])
+    jsondata = subprocess.check_output(['./sav2json', '-infile', path])
     with tempfile.NamedTemporaryFile() as tf:
         tf.write(jsondata)
         tf.flush()
-        tf.close()
 
         subprocess.check_call(['./check.py', tf.name])
 
 
 last_processed = None
 while True:
-    autosaves = [f for f in os.listdir(args.dir) if f.startswith('autosave_')]
+    autosaves = [f for f in os.listdir(args.dir) if f.startswith('autosave_') and f.endswith(".sav")]
     autosaves.sort()
     autosave = autosaves[-1]
 
@@ -34,5 +33,6 @@ while True:
         fullpath = os.path.join(args.dir, autosaves[-1])
         print('found new autosave', fullpath)
         execute(fullpath)
+        last_processed = autosave
 
     time.sleep(interval)
