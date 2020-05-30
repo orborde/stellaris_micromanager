@@ -19,6 +19,8 @@ func main() {
 	lexer := parser.NewGamestateLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	p := parser.NewGamestateParser(stream)
-	parsed := p.Configfile()
-	log.Print(parsed)
+	parsed := p.Configfile().(*parser.ConfigfileContext)
+	a0 := parsed.AllAssignment()[0].(*parser.AssignmentContext)
+	log.Println(a0.GetKey().(*parser.ExpressionContext).STRING())
+	log.Println(a0.GetKey().(*parser.ExpressionContext).ATOM())
 }
