@@ -28,4 +28,10 @@ for c in gamestate['country'][0].values():
         continue
 
     timed_modifiers = c['timed_modifier']
-    print(name, any(modifier['modifier'][0] == '"curator_insight"' for modifier in timed_modifiers))
+    ci_mod = list(filter(lambda m: m['modifier'][0] == '"curator_insight"', timed_modifiers))
+    assert len(ci_mod) in [0,1]
+    if len(ci_mod) == 0:
+        print(name, 'lacks Curator Insight! :(')
+    else:
+        ci_mod = ci_mod[0]
+        print(name, float(ci_mod['days'][0]), 'days remaining')
