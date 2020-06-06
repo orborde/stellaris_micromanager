@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path
+import shutil
 import subprocess
 import tempfile
 import time
@@ -10,6 +11,7 @@ import time
 parser=argparse.ArgumentParser()
 parser.add_argument("dir")
 parser.add_argument('interval')
+parser.add_argument('--dump_location', default='/tmp/broken.sav')
 args = parser.parse_args()
 
 interval=float(args.interval)
@@ -32,7 +34,12 @@ while True:
     if last_processed is None or last_processed < autosave:
         fullpath = os.path.join(args.dir, autosaves[-1])
         print('found new autosave', fullpath)
-        execute(fullpath)
+        try:
+            execute(fullpath)
+        except Exception as e:
+            print('dumping to', args.dump_location)
+            shutil.copyfile(fullpath, args.dump_location)
+            raise e
         last_processed = autosave
 
     time.sleep(interval)
