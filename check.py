@@ -14,6 +14,21 @@ with open(args.infile) as i:
     gamestate = json.load(i)
 
 
+def check_timed_modifier(country, modifier: str):
+    if 'timed_modifier' not in country:
+        return
+
+    name = country['name']
+    timed_modifiers = country['timed_modifier']
+    ci_mod = list(filter(lambda m: m['modifier'][0] == modifier, timed_modifiers))
+    assert len(ci_mod) in [0,1]
+    if len(ci_mod) == 0:
+        print(name, 'lacks', modifier, ':(')
+    else:
+        ci_mod = ci_mod[0]
+        print(name, float(ci_mod['days'][0]), 'days remaining on', modifier)
+
+
 TARGET_COUNTRIES={
     "Unified Consciousness",
     "CUDDLE PUDDLE",
@@ -40,17 +55,9 @@ for c in gamestate['country'][0].values():
                 researching = item['technology'][0]
                 techs_countries[researching].add(name)
 
-    if 'timed_modifier' not in c:
-        continue
-
-    timed_modifiers = c['timed_modifier']
-    ci_mod = list(filter(lambda m: m['modifier'][0] == 'curator_insight', timed_modifiers))
-    assert len(ci_mod) in [0,1]
-    if len(ci_mod) == 0:
-        print(name, 'lacks Curator Insight! :(')
-    else:
-        ci_mod = ci_mod[0]
-        print(name, float(ci_mod['days'][0]), 'days remaining')
+    check_timed_modifier(c, 'curator_insight')
+    check_timed_modifier(c, 'enclave_artist_patron')
+    check_timed_modifier(c, 'enclave_artist_festival')
 
 for tech in techs_countries:
     if len(techs_countries[tech]) > 1:
