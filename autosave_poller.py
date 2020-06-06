@@ -25,6 +25,7 @@ def execute(path):
         tf.flush()
 
         subprocess.check_call(['./check.py', tf.name])
+    print('...analyzed!')
 
 
 last_processed = None
