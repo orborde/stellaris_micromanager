@@ -29,8 +29,13 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
 # Feature ideas
 
 * Detect research agreement participants researching the same technology simultaneously ✔️
-* Agreement checks ✔️
-  * Artisan troupe ✔️ ️
+* Agreement checks️
+  * Artisan troupe
+    * Patron deal ✔
+    * Festival of Worlds ✔
+    * Monuments
+      * All purchased
+      * All exhibited
   * Curator order ✔️
 * Scientist misallocation
 * Underdeveloped claimed systems
