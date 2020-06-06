@@ -42,9 +42,26 @@ def check_timed_modifier(country, modifier: str):
         ci_mod = ci_mod[0]
         print(name, float(ci_mod['days'][0]), 'days remaining on', modifier)
 
+def check_unexploited_deposits(country_name, country_id, galactic_objects, planets):
+    country_systems = [obj[0] for obj in galactic_objects.values() if obj[0]['starbase'][0]==country_id]
+    country_planet_ids = sum((obj['planet'] for obj in country_systems), [])
+    country_planets = [planets['planet'][0][pid] for pid in country_planet_ids]
+
+    for planet in country_planets:
+        planet = planet[0]
+        if 'deposits' not in planet:
+            continue
+
+        deposits = planet['deposits'][0]
+        if len(deposits) > 0 and 'shipclass_orbital_station' not in planet:
+            print(country_name, ':', planet['name'][0], 'unexploited deposits', deposits)
+
+
+countries = gamestate['country'][0]
+
 techs_countries = collections.defaultdict(set)
 
-for c in gamestate['country'][0].values():
+for cid, c in countries.items():
     if c == ['none']:
         continue
 
@@ -66,6 +83,10 @@ for c in gamestate['country'][0].values():
     check_timed_modifier(c, 'curator_insight')
     check_timed_modifier(c, 'enclave_artist_patron')
     check_timed_modifier(c, 'enclave_artist_festival')
+    check_unexploited_deposits(
+        name, cid,
+        gamestate['galactic_object'][0],
+        gamestate['planets'][0])
 
 for tech in techs_countries:
     if len(techs_countries[tech]) > 1:
