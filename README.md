@@ -38,7 +38,8 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
       * All exhibited
   * Curator order ✔️
 * Scientist misallocation
-* Underdeveloped claimed systems
+* Underdeveloped claimed systems 🚧
+  * TODO: Only flag resource deposits, not all the things Stellaris calls "deposits"
 * Election influence budget
   * When is your next election?
   * More importantly: are you on track to have enough influence?
