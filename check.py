@@ -14,6 +14,17 @@ with open(args.infile) as i:
     gamestate = json.load(i)
 
 
+# TARGET_COUNTRIES={
+#     "Unified Consciousness",
+#     "CUDDLE PUDDLE",
+# }
+
+
+TARGET_COUNTRIES={
+    'Interstellar Orc Horde',
+    'YOLO',
+}
+
 def check_timed_modifier(country, modifier: str):
     if 'timed_modifier' not in country:
         return
@@ -27,12 +38,6 @@ def check_timed_modifier(country, modifier: str):
     else:
         ci_mod = ci_mod[0]
         print(name, float(ci_mod['days'][0]), 'days remaining on', modifier)
-
-
-TARGET_COUNTRIES={
-    "Unified Consciousness",
-    "CUDDLE PUDDLE",
-}
 
 techs_countries = collections.defaultdict(set)
 
