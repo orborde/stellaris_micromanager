@@ -44,18 +44,19 @@ def check_timed_modifier(country, modifier: str):
 
 def check_unexploited_deposits(country_name, country_id, galactic_objects, planets, deposit):
     country_systems = [obj[0] for obj in galactic_objects.values() if obj[0]['starbase'][0]==country_id]
-    country_planet_ids = sum((obj['planet'] for obj in country_systems), [])
-    country_planets = [planets['planet'][0][pid] for pid in country_planet_ids]
+    for system in country_systems:
+        planet_ids = system['planet']
+        planets = [planets['planet'][0][pid] for pid in planet_ids]
 
-    for planet in country_planets:
-        planet = planet[0]
-        if 'deposits' not in planet:
-            continue
+        for planet in planets:
+            planet = planet[0]
+            if 'deposits' not in planet:
+                continue
 
-        deposits = planet['deposits'][0]
-        if len(deposits) > 0 and 'shipclass_orbital_station' not in planet:
-            print(country_name, ':', planet['name'][0], 'unexploited deposits',
-            [deposit[d][0]['type'][0] for d in deposits])
+            deposits = planet['deposits'][0]
+            if len(deposits) > 0 and 'shipclass_orbital_station' not in planet:
+                print(country_name, ':', system['name'][0], '/', planet['name'][0], 'unexploited deposits',
+                [deposit[d][0]['type'][0] for d in deposits])
 
 
 countries = gamestate['country'][0]
