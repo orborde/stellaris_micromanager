@@ -50,7 +50,7 @@ for c in gamestate['country'][0].values():
         queue=t+'_queue'
         if queue not in tech:
             continue
-        for item in tech[queue][0][0]:
+        for item in tech[queue][0]:
             if 'technology' in item:
                 researching = item['technology'][0]
                 techs_countries[researching].add(name)
