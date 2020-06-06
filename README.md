@@ -43,7 +43,6 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
   * When is your next election?
   * More importantly: are you on track to have enough influence?
   * How much influence can you safely spend?
-* Unspent civic slots
 * Advanced job allocation
   * Detect pointless job usages
   * Resource stockpile full
