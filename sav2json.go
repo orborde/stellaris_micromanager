@@ -101,20 +101,27 @@ func loadGamestate(infile string) string {
 
 func main() {
 	infile := flag.String("infile", "", "")
+	verbose := flag.Bool("verbose", false, "")
 	flag.Parse()
 
-	log.Println("load")
+	vlog := func(args ...interface{}) {
+		if *verbose {
+			log.Println(args...)
+		}
+	}
+
+	vlog("load")
 	data := loadGamestate(*infile)
 
-	log.Println("parse")
+	vlog("parse")
 	is := antlr.NewInputStream(data)
 	lexer := parser.NewGamestateLexer(is)
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	p := parser.NewGamestateParser(stream)
 	parsed := p.Configfile().(*parser.ConfigfileContext)
-	log.Println("translate")
+	vlog("translate")
 	mess := translateConfigFile(parsed)
-	log.Println("encode")
+	vlog("encode")
 	enc := json.NewEncoder(os.Stdout)
 	if err := enc.Encode(mess); err != nil {
 		log.Fatal(err)
