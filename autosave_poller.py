@@ -9,9 +9,11 @@ import tempfile
 import time
 
 parser=argparse.ArgumentParser()
-parser.add_argument("dir")
-parser.add_argument('interval')
-parser.add_argument('--dump_location', default='/tmp/broken.sav')
+parser.add_argument("dir", type=str, help='directory where new autosave files will appear')
+parser.add_argument('--interval', type=int, default=1, help='poll interval (seconds)')
+parser.add_argument(
+    '--dump_location', default='/tmp/broken.sav',
+    help='when the subcommand fails, put the offending savegame at this path')
 args = parser.parse_args()
 
 interval=float(args.interval)
