@@ -8,6 +8,9 @@ import zipfile
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
+parser.add_argument(
+    '--show-modifier-time-remaining', default=False, type=bool,
+    help="Show remaining time on timed modifiers")
 args = parser.parse_args()
 
 with open(args.infile) as i:
@@ -35,7 +38,7 @@ def check_timed_modifier(country, modifier: str):
     assert len(ci_mod) in [0,1]
     if len(ci_mod) == 0:
         print(name, 'lacks', modifier, ':(')
-    else:
+    elif args.show_modifier_time_remaining:
         ci_mod = ci_mod[0]
         print(name, float(ci_mod['days'][0]), 'days remaining on', modifier)
 
