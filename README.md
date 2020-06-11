@@ -24,7 +24,7 @@ go build sav2json.go
 ```
 ed check.py  # Edit the script to point TARGET_COUNTRIES at the player-controlled countries you want to analyze
 go build sav2json.go
-nice -n19 ./autosave_poller.py $STELLARIS_SAVE_FOLDER/mpinterstellarorchorde2_1013776793/ 1
+nice -n19 ./autosave_poller.py $STELLARIS_SAVE_FOLDER/mpinterstellarorchorde2_1013776793/
 ```
 
 This script watches the savegame directory for new autosaves, and reruns the toolchain when it sees one.
