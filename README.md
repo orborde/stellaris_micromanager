@@ -1,6 +1,13 @@
-Stellaris involves a lot of micromanagement that's pretty mechanical (e.g. remembering to use Festival of Worlds, checking that all your mining/research stations are built). This tool reads your saves to track those details and alert you when something needs fixing. [Turn on monthly autosave and watch your empire while you play!](#monitoring-while-you-play)
+Stellaris involves a lot of micromanagement that's pretty mechanical (e.g. remembering to use Festival of Worlds, checking that all your mining/research stations are built). This tool reads your saves to track those details and alert you when something needs fixing.
+
+[Turn on monthly autosave and watch your empire while you play!](#monitoring-while-you-play)
 
 # How do I run it?
+
+## Requirements
+
+* [Python](https://www.python.org/downloads/)
+* [Go](https://golang.org/dl/)
 
 ## One-off
 ```
