@@ -42,8 +42,7 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
       * All purchased
       * All exhibited
   * Curator order ✔️
-* Resource deposits without stations 🚧
-  * TODO: Only flag resource deposits, not all the things Stellaris calls "deposits"
+* Resource deposits without stations ✔️
 * Scientist misallocation
 * Election influence budget
   * When is your next election?

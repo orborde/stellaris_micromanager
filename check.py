@@ -43,6 +43,20 @@ def check_timed_modifier(country, modifier: str):
         print(name, float(ci_mod['days'][0]), 'days remaining on', modifier)
 
 def check_unexploited_deposits(country_name, country_id, galactic_objects, planets, deposit):
+    DEPOSIT_TYPES = {'d_' + x for x in [
+        'alloys',
+        'dark_matter_deposit',
+        'energy',
+        'engineering',
+        'exotic_gases',
+        'minerals',
+        'physics',
+        'rare_crystals',
+        'society',
+        'volatile_motes',
+        'zro_deposit',
+    ]}
+
     country_systems = [obj[0] for obj in galactic_objects.values() if obj[0]['starbase'][0]==country_id]
     for system in country_systems:
         planet_ids = system['planet']
@@ -53,10 +67,16 @@ def check_unexploited_deposits(country_name, country_id, galactic_objects, plane
             if 'deposits' not in planet:
                 continue
 
+            # There's a station, so any deposits are exploited.
+            if 'shipclass_orbital_station' in planet:
+                continue
+
             deposits = planet['deposits'][0]
-            if len(deposits) > 0 and 'shipclass_orbital_station' not in planet:
-                print(country_name, ':', system['name'][0], '/', planet['name'][0], 'unexploited deposits',
-                [deposit[d][0]['type'][0] for d in deposits])
+            deposit_types = (deposit[d][0]['type'][0] for d in deposits)
+            checked_deposits = [d for d in deposit_types if d.rsplit('_', 1)[0] in DEPOSIT_TYPES]
+            if len(checked_deposits) > 0:
+                print(country_name, ':', system['name'][0], '/', planet['name'][0],
+                    'unexploited deposits:', checked_deposits)
 
 
 countries = gamestate['country'][0]
