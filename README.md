@@ -1,6 +1,6 @@
-Stellaris involves a lot of micromanagement that's pretty mechanical. This repo is a pile of awful hacks to make a computer deal with it.
+Stellaris involves a lot of micromanagement that's pretty mechanical (e.g. remembering to use Festival of Worlds, checking that all your mining/research stations are built). This tool helps you keep track of all those details.
 
-The closest thing Stellaris has to a general-purpose API is its savegame format, so that's what this tooling ingests.
+The closest thing Stellaris has to a general-purpose API is its savegame format, so that's what this tool reads. [Turn on monthly autosave and run the tool in another window to watch your empire while you play](#monitoring-while-you-play)!
 
 # How do I run it?
 
