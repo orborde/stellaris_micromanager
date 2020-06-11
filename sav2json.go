@@ -8,7 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"stellaris_tools/parser"
+	"stellaris_micromanager/parser"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 )
