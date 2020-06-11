@@ -32,6 +32,7 @@ This script watches the savegame directory for new autosaves, and reruns the too
 Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is enabled; this only affects the save game folder path you need to point the poller at.
 
 # Feature ideas
+✔ = implemented!️
 
 * Detect research agreement participants researching the same technology simultaneously ✔️
 * Agreement checks️
