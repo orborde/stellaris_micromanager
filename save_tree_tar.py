@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("save_directory", type=str)
 args = parser.parse_args()
 
-saves = sorted(fname for fname in os.listdir(args.save_directory))
+saves = sorted(os.listdir(args.save_directory))
 
 with os.fdopen(sys.stdout.fileno(), "wb", closefd=False) as stdout:
     with tarfile.open(mode='w|', fileobj=stdout) as tar:
