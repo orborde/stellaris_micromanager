@@ -54,6 +54,9 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
   * Detect pointless job usages
   * Resource stockpile full
   * Too many bureaucrats
+  * Too _few_ bureaucrats
+    * Detect when switching a scientist to a bureaucrat would speed up research
+    * Detect when switching a culture worker to a bureaucrat would speed up next tradition adoption
 * Corporate empires
   * Branch office candidates
   * Commercial pact prospects
@@ -75,6 +78,7 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
   * (if enabled) distribute luxury goods reminders?
   * Optimal planet designation
 * Colonization targets in your space
+* Alert when your neighbor's relative fleet power is "Superior" or higher.
 * (if you can figure out how to _write_ the save format) Modify save to have an optimal setup
   * Meticulous scientists
   * Scientists with the optimal specialties for the "make research faster" techs
