@@ -48,15 +48,13 @@ func main() {
 		}
 	}()
 
-	//    Punct = "!"…"/" | ":"…"@" | "["…` + "\"`\"" + ` | "{"…"~" .
-	//     Number = ["-"] ( ({digit} ["."] digit {digit}) | (digit {digit} ["."] {digit})) .
 	lex := lexer.Must(ebnf.New(`
     Comment = ("#" | "//") { "\u0000"…"\uffff"-"\n" } .
 	Ident = (alpha | "_") { "_" | alpha | digit | ":"} .
 	Number = ("-" | "." | digit) {"-" | "." | digit} .
 	Whitespace = " " | "\t" | "\n" | "\r" .
 	Punct = "=" | "{" | "}" .
-	String = "\"" { ( "\u0000"…"\uffff"-"\""-"\\" | "\x00"…"\xff"-"\""-"\\" | "\x11" | "\\" "\u0000"…"\uffff") } "\"" .
+	String = "\"" { ( "\u0000"…"\uffff"-"\""-"\\" | "\\" "\u0000"…"\uffff") } "\"" .
 
     alpha = "a"…"z" | "A"…"Z" .
     digit = "0"…"9" .
