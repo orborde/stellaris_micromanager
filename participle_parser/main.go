@@ -12,7 +12,7 @@ import (
 )
 
 type ConfigFile struct {
-	Assignments []Assignment `@@`
+	Assignments []Assignment `@@*`
 }
 
 type Assignment struct {
@@ -21,14 +21,15 @@ type Assignment struct {
 }
 
 type Expression struct {
-	String       *string        `@String`
-	Atom         *string        `| @Ident`
-	KeyValueList []KeyValueList `"{" @@ "}"`
+	String       *string    `@String`
+	Atom         *string    `| @Ident`
+	Number       *string    `| @Number`
+	KeyValueList []KeyValue `| "{" @@* "}"`
 }
 
-type KeyValueList struct {
-	Key   Expression  `@@ "="`
-	Value *Expression `@@`
+type KeyValue struct {
+	Key   Expression  `@@`
+	Value *Expression `[ "=" @@ ]`
 }
 
 func must(err error) {
@@ -60,7 +61,9 @@ func main() {
     digit = "0"…"9" .
 `))
 	parser := participle.MustBuild(&ConfigFile{},
-		participle.Lexer(lex))
+		participle.Lexer(lex),
+		participle.Elide("Comment", "Whitespace"),
+	)
 	var configFile ConfigFile
 	must(parser.Parse(f, &configFile))
 }
