@@ -1,3 +1,5 @@
+// Parse using participle instead of ANTLR. Participle has better ergonomics, e.g.
+// "actually uses Go-typed data structures".
 package main
 
 import (
@@ -49,17 +51,19 @@ func main() {
 		}
 	}()
 
+	// The default participle lexer uses text/scanner, which special-cases '\n' to a
+	// token break, preventing multiline strings. Hence this messy EBNF workaround.
 	lex := lexer.Must(ebnf.New(`
-    Comment = ("#" | "//") { "\u0000"…"\uffff"-"\n" } .
-	Ident = (alpha | "_") { "_" | alpha | digit | ":"} .
-	Number = ("-" | "." | digit) {"-" | "." | digit} .
-	Whitespace = " " | "\t" | "\n" | "\r" .
-	Punct = "=" | "{" | "}" .
-	String = "\"" { ( "\u0000"…"\uffff"-"\""-"\\" | "\\" "\u0000"…"\uffff") } "\"" .
+		Comment = ("#" | "//") { "\u0000"…"\uffff"-"\n" } .
+		Ident = (alpha | "_") { "_" | alpha | digit | ":"} .
+		Number = ("-" | "." | digit) {"-" | "." | digit} .
+		Whitespace = " " | "\t" | "\n" | "\r" .
+		Punct = "=" | "{" | "}" .
+		String = "\"" { ( "\u0000"…"\uffff"-"\""-"\\" | "\\" "\u0000"…"\uffff") } "\"" .
 
-    alpha = "a"…"z" | "A"…"Z" .
-    digit = "0"…"9" .
-`))
+		alpha = "a"…"z" | "A"…"Z" .
+		digit = "0"…"9" .
+	`))
 	parser := participle.MustBuild(&ConfigFile{},
 		participle.Lexer(lex),
 		participle.Elide("Comment", "Whitespace"),
