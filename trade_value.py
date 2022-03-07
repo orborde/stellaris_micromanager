@@ -28,7 +28,7 @@ def usableOfferAmount():
         proposedToCurrentStockpile
     )
 
-    print('headRoom', headRoom, headRoom/UDENOM)
+    print('headRoom', headRoom, headRoom//UDENOM)
     if headRoom > offeredAmount: # TODO: this inverts the equation in code
         return offeredAmount
     elif headRoom <= 0:
@@ -44,7 +44,7 @@ def adjustedAIWeight():
         return UDENOM
     return adj
 
-print(adjustedAIWeight())
+print('adjustedAIWeight', adjustedAIWeight())
 hedonFactor = (
     ((adjustedAIWeight() * 100000) //
     (((TRADE_VALUE_RESOURCE_INCOME_BASE * 2 + proposerIncome + proposedToIncome)
@@ -61,8 +61,8 @@ hedonFactor = (
 #     //(2*TRADE_VALUE_RESOURCE_INCOME_BASE + proposedToIncome + proposerIncome)
 # )
 
-print('hedonFactor', hedonFactor, hedonFactor/UDENOM)
-print(usableOfferAmount(), usableOfferAmount()/UDENOM)
+print('hedonFactor', hedonFactor, hedonFactor//UDENOM)
+print(usableOfferAmount(), usableOfferAmount()//UDENOM)
 
 tradeHedons = (((((hedonFactor // UDENOM) * usableOfferAmount()) // UDENOM) * UDENOM) // 1200000) * tradeWillingness
 
