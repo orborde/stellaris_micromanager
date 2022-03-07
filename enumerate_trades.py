@@ -116,11 +116,15 @@ def balance(country, resource: Resource):
 
 
 def resources_for(country):
-    return {
-        Resource(k): float(v[0])
-        for k, v in country['modules'][0]['standard_economy_module'][0]['resources'][0].items()
-        if k in Resource.__members__
-    }
+    raw_resource_dict = country['modules'][0]['standard_economy_module'][0]['resources'][0]
+    ret = {}
+    for resource in Resource:
+        if resource.value in raw_resource_dict:
+            ret[resource] = float(raw_resource_dict[resource.value][0])
+        else:
+            ret[resource] = 0
+    return ret
+
 
 proposer_resources = resources_for(proposer)
 
