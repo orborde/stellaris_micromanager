@@ -80,10 +80,11 @@ def resources_for(country):
 
 proposer_resources = resources_for(proposer)
 
-def generate_steps(proposer, recipient, resource: Resource, trade_willingness: float):
+def generate_minimal_steps(proposer, recipient, resource: Resource, trade_willingness: float):
+    proposer_resources = resources_for(proposer)
     recipient_resources = resources_for(recipient)
     last_val = 0
-    for offeredAmount in range(100):
+    for offeredAmount in range(int(proposer_resources[resource])+1):
         val = trade_value_for_recipient(
             resource=resource,
             offeredAmount=offeredAmount,
@@ -115,5 +116,5 @@ def find_energy_price_for(recipient, trade_value: int):
 for partner_name in friendly_enough_to_trade:
     print(partner_name, ids_by_name[partner_name])
     partner = countries_by_name[partner_name]
-    for offeredAmount, val in generate_steps(proposer, partner, args.resource, args.trade_willingness):
+    for offeredAmount, val in generate_minimal_steps(proposer, partner, args.resource, args.trade_willingness):
         print(offeredAmount, find_energy_price_for(partner, val))
