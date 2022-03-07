@@ -19,11 +19,37 @@ TRADEABLE_STANCES = {
     'custodial',
     'enigmatic',
 }
+PERSONALITY_TRADE_WILLINGNESS = {
+    'honorbound_warriors': 0.7,
+    'evangelising_zealots': 0.75,
+    'erudite_explorers': 0.9,
+    'spiritual_seekers': 0.9,
+    'ruthless_capitalists': 1.0,
+    'peaceful_traders': 1.0,
+    'hegemonic_imperialists': 0.8,
+    'slaving_despots': 0.8,
+    'decadent_hierarchy': 0.9,
+    'democratic_crusaders': 0.9,
+    'harmonious_hierarchy': 0.9,
+    'federation_builders': 0.95,
+    'xenophobic_isolationists': 0.5,
+    'fanatic_purifiers': 0.5,
+    'hive_mind': 0.7,
+    'devouring_swarm': 0.0,
+    'migrating_flock': 1.1,
+    'metalhead': 0.0,
+    'machine_intelligence': 0.8,
+    'assimilators': 0.5,
+    'exterminators': 1.0,
+    'servitors': 0.9,
+    'fanatic_befrienders': 1.0,
+    'became_the_crisis': 0.5,
+}
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
 parser.add_argument("proposer", type=str)
-parser.add_argument("trade_willingness", type=float) # TODO: read from save file instead
 parser.add_argument("resource", type=Resource, choices=[c for c in Resource])
 parser.add_argument("--book_size", type=int, default=3)
 args = parser.parse_args()
@@ -128,10 +154,15 @@ def generate_asks(partner, resource: Resource, trade_willingness: float):
 
 
 for partner_name in friendly_enough_to_trade:
-    print(partner_name, ids_by_name[partner_name])
+    personality = countries_by_name[partner_name]['personality'][0]
+    if personality not in PERSONALITY_TRADE_WILLINGNESS:
+        print(f"{partner_name} has unknown personality {personality}")
+        continue
+    trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
+    print(partner_name, ids_by_name[partner_name], personality, trade_willingness)
     partner = countries_by_name[partner_name]
-    bids = list(generate_bids(partner, args.resource, args.trade_willingness))
-    asks = list(generate_asks(partner, args.resource, args.trade_willingness))
+    bids = list(generate_bids(partner, args.resource, trade_willingness))
+    asks = list(generate_asks(partner, args.resource, trade_willingness))
 
     for volume,price in bids[:args.book_size]:
         print(f"  BID {volume} @ {price}")
