@@ -80,15 +80,15 @@ def resources_for(country):
 
 proposer_resources = resources_for(proposer)
 
-def generate_minimal_steps(proposer, recipient, resource: Resource, trade_willingness: float):
-    proposer_resources = resources_for(proposer)
+def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingness: float):
+    sender_resources = resources_for(sender)
     recipient_resources = resources_for(recipient)
     last_val = 0
-    for offeredAmount in range(int(proposer_resources[resource])+1):
+    for offeredAmount in range(int(sender_resources[resource])+1):
         val = trade_value_for_recipient(
             resource=resource,
             offeredAmount=offeredAmount,
-            senderIncome=income(proposer, resource),
+            senderIncome=income(sender, resource),
             recipientIncome=income(recipient, resource),
             recipientTradeWillingness=trade_willingness,
             recipientCurrentStockpile=recipient_resources[resource],
