@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/alecthomas/participle/lexer"
 	"github.com/alecthomas/participle/lexer/ebnf"
@@ -51,6 +52,9 @@ func main() {
 		}
 	}()
 
+	log.Println("starting parse")
+	start := time.Now()
+
 	// The default participle lexer uses text/scanner, which special-cases '\n' to a
 	// token break, preventing multiline strings. Hence this messy EBNF workaround.
 	lex := lexer.Must(ebnf.New(`
@@ -70,4 +74,5 @@ func main() {
 	)
 	var configFile ConfigFile
 	must(parser.Parse(f, &configFile))
+	log.Println("parse completed in", time.Since(start))
 }
