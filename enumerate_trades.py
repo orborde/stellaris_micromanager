@@ -243,7 +243,7 @@ def internal_market_orders():
         if resource not in MARKET_BASE_PRICES:
             continue
 
-        min_qty = 100 / MARKET_BASE_PRICES[resource]
+        min_qty = 100 // MARKET_BASE_PRICES[resource]
         yield Offer(
             TradeType.ASK,
             resource,
