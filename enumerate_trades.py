@@ -212,7 +212,7 @@ def generate_bids(partner, resource: Resource, trade_willingness: float):
 def generate_asks(partner, resource: Resource, trade_willingness: float):
     for energy_amt, val in generate_minimal_steps(partner, proposer, Resource.energy, trade_willingness):
         volume = find_maximal_for(partner, val, resource)
-        if volume is None:
+        if volume is None or volume == 0:
             # TODO: figure out exactly what is happening for these
             continue
         yield Offer(TradeType.ASK, resource, partner['name'][0], volume, energy_amt)
