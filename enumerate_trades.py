@@ -144,9 +144,10 @@ def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingn
 
 def find_maximal_for(partner, trade_value: int, resource: Resource):
     partner_resources = resources_for(partner)
-    partner_stockpile = partner_resources[resource]
-    for resource_back in range(int(partner_stockpile), 0, -1):
-        val = trade_value_for_recipient(
+    partner_stockpile = int(partner_resources[resource])
+
+    def tvr(resource_back: int):
+        return trade_value_for_recipient(
             resource=resource,
             offeredAmount=resource_back,
             senderIncome=income(partner, resource),
@@ -155,6 +156,12 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
             recipientCurrentStockpile=proposer_resources[resource],
             recipientResourceCap=25000, # TODO: read from save file somehow
         )
+
+    if trade_value - tvr(partner_stockpile) >= 1:
+        return partner_stockpile
+
+    for resource_back in range(partner_stockpile, 0, -1):
+        val = tvr(resource_back)
         if trade_value - val == 1:
             return resource_back
 
