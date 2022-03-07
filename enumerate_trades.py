@@ -238,10 +238,10 @@ for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trad
 proposer_stockpiles = {}
 for resource in resources:
     stock = proposer_resources[resource]
-    print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
+    # print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
     if balance(proposer, resource) < 0:
         stock += balance(proposer, resource)
-        print(f'  (effectively {stock})')
+        # print(f'  (effectively {stock})')
     proposer_stockpiles[resource] = stock
 
 all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpiles[o.resource]]
