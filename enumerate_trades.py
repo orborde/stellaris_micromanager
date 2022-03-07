@@ -54,7 +54,7 @@ PERSONALITY_TRADE_WILLINGNESS = {
 parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
 parser.add_argument("proposer", type=str)
-parser.add_argument("resources", type=str)
+parser.add_argument("resources", type=str,help=','.join([r.value for r in Resource]+['all']))
 parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
 args = parser.parse_args()
