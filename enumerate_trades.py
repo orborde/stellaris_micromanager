@@ -2,6 +2,7 @@
 
 import argparse
 from dataclasses import dataclass
+import itertools
 import json
 import pathlib
 
@@ -200,4 +201,34 @@ for partner_name in friendly_enough_to_trade:
         print(ask)
     print()
 
-[print(order) for order in sorted(orders, key=lambda o: o.price())]
+all_bids = [o for o in orders if o.type == TradeType.BID]
+all_asks = [o for o in orders if o.type == TradeType.ASK]
+
+all_bids.sort(key=lambda o: o.price())
+all_asks.sort(key=lambda o: o.price())
+
+for o in all_bids[-args.book_size:]:
+    print(o)
+for o in all_asks[:args.book_size]:
+    print(o)
+
+def executable(bid: Offer, ask: Offer):
+    assert bid.type == TradeType.BID
+    assert ask.type == TradeType.ASK
+    return (bid.amount <= ask.amount)
+
+def profit(bid: Offer, ask: Offer):
+    assert bid.type == TradeType.BID
+    assert ask.type == TradeType.ASK
+    assert executable(bid, ask)
+    return bid.energy - ask.energy
+
+print(f'{len(all_bids)} bids, {len(all_asks)} asks')
+matches = [(bid, ask) for bid,ask in itertools.product(all_bids, all_asks) if executable(bid, ask)]
+matches.sort(key=lambda m: profit(m[0], m[1]))
+print(f'{len(matches)} matches')
+for bid,ask in matches[-args.book_size:]:
+    print(bid)
+    print(ask)
+    print(min(bid.amount, ask.amount), profit(bid, ask))
+    print()
