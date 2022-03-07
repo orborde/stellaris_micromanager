@@ -3,8 +3,6 @@
 import argparse
 import collections
 import json
-import logging
-import zipfile
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
