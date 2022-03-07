@@ -63,7 +63,7 @@ if args.resources == 'all':
     resources = [r for r in Resource if r is not Resource.energy]
 else:
     resources = [Resource(r) for r in args.resources.split(',')]
-print('Processing resource list:', [r.value for r in resources])
+# print('Processing resource list:', [r.value for r in resources])
 
 with open(args.save_file_json) as f:
     gamestate = json.load(f)
