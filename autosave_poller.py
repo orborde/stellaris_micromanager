@@ -10,6 +10,7 @@ import time
 
 parser=argparse.ArgumentParser()
 parser.add_argument("dir", type=str, help='directory where new autosave files will appear')
+parser.add_argument("cmd", type=str, help='command to run')
 parser.add_argument('--interval', type=int, default=1, help='poll interval (seconds)')
 parser.add_argument(
     '--dump_location', default='/tmp/broken.sav',
@@ -24,7 +25,7 @@ def execute(path):
         tf.write(jsondata)
         tf.flush()
 
-        subprocess.check_call(['./check.py', tf.name])
+        subprocess.check_call([args.cmd, tf.name])
     print('...analyzed!')
 
 
