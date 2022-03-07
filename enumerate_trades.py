@@ -8,8 +8,8 @@ from trade_value import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
-parser.add_argument("proposer_id", type=int)
-parser.add_argument("recipient_id", type=int)
+parser.add_argument("proposer", type=str)
+parser.add_argument("recipient", type=str)
 parser.add_argument("trade_willingness", type=float) # TODO: read from save file instead
 parser.add_argument("resource", type=Resource, choices=[c for c in Resource])
 args = parser.parse_args()
@@ -18,8 +18,13 @@ with open(args.save_file_json) as f:
     gamestate = json.load(f)
 
 countries = gamestate['country'][0]
-proposer = countries[str(args.proposer_id)][0]
-recipient = countries[str(args.recipient_id)][0]
+countries_by_name = {
+    c[0]['name'][0]: c[0]
+    for c in countries.values()
+    if type(c[0]) is dict # seriously wtf
+}
+proposer = countries_by_name[args.proposer]
+recipient = countries_by_name[args.recipient]
 
 def income(country, resource: Resource):
     return sum(
