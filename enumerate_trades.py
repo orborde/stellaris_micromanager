@@ -57,6 +57,7 @@ parser.add_argument("proposer", type=str)
 parser.add_argument("resources", type=str,help=','.join([r.value for r in Resource]+['all']))
 parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
+parser.add_argument("--progress", action="store_true")
 args = parser.parse_args()
 
 if args.resources == 'all':
@@ -226,11 +227,13 @@ for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trad
         print()
         continue
     trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
-    print(partner_name, resource.value, ids_by_name[partner_name], personality, trade_willingness)
+    if args.progress:
+        print(partner_name, resource.value, ids_by_name[partner_name], personality, trade_willingness)
     partner = countries_by_name[partner_name]
     bids = list(generate_bids(partner, resource, trade_willingness))
     asks = list(generate_asks(partner, resource, trade_willingness))
-    print(f"{len(bids)} bids, {len(asks)} asks")
+    if args.progress:
+        print(f"{len(bids)} bids, {len(asks)} asks")
     orders.extend(bids)
     orders.extend(asks)
 
