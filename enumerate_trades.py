@@ -58,6 +58,7 @@ parser.add_argument("resources", type=str,help=','.join([r.value for r in Resour
 parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
 parser.add_argument("--progress", action="store_true")
+parser.add_argument("--market_fee", type=float, default=0.3)
 args = parser.parse_args()
 
 if args.resources == 'all':
@@ -218,8 +219,51 @@ def generate_asks(partner, resource: Resource, trade_willingness: float):
             continue
         yield Offer(TradeType.ASK, resource, partner['name'][0], volume, energy_amt)
 
+MARKET_BASE_PRICES = {
+    Resource.minerals: 1,
+    Resource.food: 1,
+    Resource.consumer_goods: 2,
+    Resource.alloys: 4,
+    Resource.volatile_motes: 10,
+    Resource.exotic_gases: 10,
+    Resource.rare_crystals: 10,
+    Resource.sr_zro: 20,
+    Resource.sr_dark_matter: 20,
+}
+def internal_market_orders():
+    internal_market_infos = gamestate['market'][0]['internal_market_fluctuations'][0]
+    market_infos = dict(zip(internal_market_infos['country'], internal_market_infos['resources']))
+    proposer_market_info = market_infos[proposer_id]
+    for resource in resources:
+        if resource.value in proposer_market_info:
+            fluctuation = 1+float(proposer_market_info[resource.value][0])/100
+        else:
+            fluctuation = 1
+        # TODO: make sure MARKET_BASE_PRICES matches up without this blind skip?
+        if resource not in MARKET_BASE_PRICES:
+            continue
+
+        yield Offer(
+            TradeType.ASK,
+            resource,
+            '(internal market)',
+            amount=100,
+            energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 + args.market_fee)),
+        )
+        yield Offer(
+            TradeType.BID,
+            resource,
+            '(internal market)',
+            amount=100,
+            energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 - args.market_fee)),
+        )
+
+print('INTERNAL MARKET')
+for order in internal_market_orders():
+    print(order)
 
 orders = []
+orders.extend(internal_market_orders())
 for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trade, resources))):
     personality = countries_by_name[partner_name]['personality'][0]
     if personality not in PERSONALITY_TRADE_WILLINGNESS:
