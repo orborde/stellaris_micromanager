@@ -317,7 +317,7 @@ for resource in resources:
 
 matches = [
     (bid, ask)
-    for bid,ask in itertools.product(all_bids, all_asks)
+    for bid,ask in tqdm(list(itertools.product(all_bids, all_asks)))
     if executable(bid, ask) and profit(bid, ask) > 0
 ]
 matches.sort(key=lambda m: profit(m[0], m[1]), reverse=True)
