@@ -99,6 +99,12 @@ def income(country, resource: Resource):
         for d in country['budget'][0]['current_month'][0]['income'][0].values()
         if d[0] is not None and resource.value in d[0])
 
+def balance(country, resource: Resource):
+    return sum(
+        float(d[0][resource.value][0])
+        for d in country['budget'][0]['current_month'][0]['balance'][0].values()
+        if d[0] is not None and resource.value in d[0])
+
 
 def resources_for(country):
     return {
@@ -201,7 +207,14 @@ for partner_name in friendly_enough_to_trade:
         print(ask)
     print()
 
-all_bids = [o for o in orders if o.type == TradeType.BID]
+# TODO: handle more gracefully
+proposer_stockpile = proposer_resources[args.resource]
+print(f"{proposer['name'][0]} has {proposer_stockpile} + {balance(proposer,args.resource)} {args.resource.value}")
+if balance(proposer, args.resource) < 0:
+    proposer_stockpile += balance(proposer, args.resource)
+print(f'effectively {proposer_stockpile}')
+
+all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpile]
 all_asks = [o for o in orders if o.type == TradeType.ASK]
 
 all_bids.sort(key=lambda o: o.price())
