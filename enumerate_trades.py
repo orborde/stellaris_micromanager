@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from dataclasses import dataclass
 import json
 import pathlib
 
@@ -141,22 +142,48 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
         if trade_value - val == 1:
             return resource_back
 
+class TradeType(enum.Enum):
+    BID = 'BID'
+    ASK = 'ASK'
+
+@dataclass
+class Offer:
+    type: TradeType
+    who: str
+    amount: int
+    energy: int
+
+    def price(self) -> float:
+        return self.energy / self.amount
+
+    def __str__(self):
+        return f"{self.type.value} {self.price():8.2f} {self.amount} {self.energy} {self.who}"
+
 
 def generate_bids(partner, resource: Resource, trade_willingness: float):
-    for offeredAmount, val in generate_minimal_steps(proposer, partner, resource, trade_willingness):
-        price = find_maximal_for(partner, val, Resource.energy)
-        yield (offeredAmount, price)
+    for volume, val in generate_minimal_steps(proposer, partner, resource, trade_willingness):
+        energy_amt = find_maximal_for(partner, val, Resource.energy)
+        if energy_amt is None:
+            # TODO: figure out exactly what is happening for these
+            continue
+        yield Offer(TradeType.BID, partner['name'][0], volume, energy_amt)
 
 def generate_asks(partner, resource: Resource, trade_willingness: float):
     for energy_amt, val in generate_minimal_steps(partner, proposer, Resource.energy, trade_willingness):
         volume = find_maximal_for(partner, val, resource)
-        yield (volume, energy_amt)
+        if volume is None:
+            # TODO: figure out exactly what is happening for these
+            continue
+        yield Offer(TradeType.ASK, partner['name'][0], volume, energy_amt)
 
+
+orders = []
 
 for partner_name in friendly_enough_to_trade:
     personality = countries_by_name[partner_name]['personality'][0]
     if personality not in PERSONALITY_TRADE_WILLINGNESS:
         print(f"{partner_name} has unknown personality {personality}")
+        print()
         continue
     trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
     print(partner_name, ids_by_name[partner_name], personality, trade_willingness)
@@ -164,8 +191,13 @@ for partner_name in friendly_enough_to_trade:
     bids = list(generate_bids(partner, args.resource, trade_willingness))
     asks = list(generate_asks(partner, args.resource, trade_willingness))
 
-    for volume,price in bids[:args.book_size]:
-        print(f"  BID {volume} @ {price}")
-    for volume,price in asks[:args.book_size]:
-        print(f"  ASK {volume} @ {price}")
+    orders.extend(bids)
+    orders.extend(asks)
+
+    for bid in bids[:args.book_size]:
+        print(bid)
+    for ask in asks[:args.book_size]:
+        print(ask)
     print()
+
+[print(order) for order in sorted(orders, key=lambda o: o.price())]
