@@ -268,7 +268,7 @@ print(f'{len(all_bids)} bids, {len(all_asks)} asks')
 for resource in resources:
     bids = [o for o in all_bids if o.resource == resource]
     asks = [o for o in all_asks if o.resource == resource]
-    print(f'{resource}: {len(bids)} bids, {len(asks)} asks')
+    print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
     if len(bids) > 0:
         print('  ', max(bids, key=lambda o: o.price()))
     if len(asks) > 0:
