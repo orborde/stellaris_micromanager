@@ -54,9 +54,15 @@ PERSONALITY_TRADE_WILLINGNESS = {
 parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
 parser.add_argument("proposer", type=str)
-parser.add_argument("resource", type=Resource, choices=[c for c in Resource])
+parser.add_argument("resources", type=str)
 parser.add_argument("--book_size", type=int, default=3)
 args = parser.parse_args()
+
+if args.resources == 'all':
+    resources = [r for r in Resource if r is not Resource.energy]
+else:
+    resources = [Resource(r) for r in args.resources.split(',')]
+print('Processing resource list:', [r.value for r in resources])
 
 with open(args.save_file_json) as f:
     gamestate = json.load(f)
@@ -158,6 +164,7 @@ class TradeType(enum.Enum):
 @dataclass
 class Offer:
     type: TradeType
+    resource: Resource
     who: str
     amount: int
     energy: int
@@ -166,7 +173,7 @@ class Offer:
         return self.energy / self.amount
 
     def __str__(self):
-        return f"{self.type.value} {self.price():8.2f} {self.amount} {self.energy} {self.who}"
+        return f"{self.type.value} {self.resource:20s} {self.price():8.2f} {self.amount} {self.energy} {self.who}"
 
 
 def generate_bids(partner, resource: Resource, trade_willingness: float):
@@ -175,7 +182,7 @@ def generate_bids(partner, resource: Resource, trade_willingness: float):
         if energy_amt is None:
             # TODO: figure out exactly what is happening for these
             continue
-        yield Offer(TradeType.BID, partner['name'][0], volume, energy_amt)
+        yield Offer(TradeType.BID, resource, partner['name'][0], volume, energy_amt)
 
 def generate_asks(partner, resource: Resource, trade_willingness: float):
     for energy_amt, val in generate_minimal_steps(partner, proposer, Resource.energy, trade_willingness):
@@ -183,39 +190,42 @@ def generate_asks(partner, resource: Resource, trade_willingness: float):
         if volume is None:
             # TODO: figure out exactly what is happening for these
             continue
-        yield Offer(TradeType.ASK, partner['name'][0], volume, energy_amt)
+        yield Offer(TradeType.ASK, resource, partner['name'][0], volume, energy_amt)
 
 
 orders = []
-for partner_name in tqdm(friendly_enough_to_trade):
+for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trade, resources))):
     personality = countries_by_name[partner_name]['personality'][0]
     if personality not in PERSONALITY_TRADE_WILLINGNESS:
         print(f"{partner_name} has unknown personality {personality}")
         print()
         continue
     trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
-    print(partner_name, ids_by_name[partner_name], personality, trade_willingness)
+    print(partner_name, resource.value, ids_by_name[partner_name], personality, trade_willingness)
     partner = countries_by_name[partner_name]
-    bids = list(generate_bids(partner, args.resource, trade_willingness))
-    asks = list(generate_asks(partner, args.resource, trade_willingness))
+    bids = list(generate_bids(partner, resource, trade_willingness))
+    asks = list(generate_asks(partner, resource, trade_willingness))
     print(f"{len(bids)} bids, {len(asks)} asks")
     orders.extend(bids)
     orders.extend(asks)
 
 # TODO: handle more gracefully
-proposer_stockpile = proposer_resources[args.resource]
-print(f"{proposer['name'][0]} has {proposer_stockpile} + {balance(proposer,args.resource)} {args.resource.value}")
-if balance(proposer, args.resource) < 0:
-    proposer_stockpile += balance(proposer, args.resource)
-print(f'effectively {proposer_stockpile}')
+proposer_stockpiles = {}
+for resource in resources:
+    stock = proposer_resources[resource]
+    print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
+    if balance(proposer, resource) < 0:
+        stock += balance(proposer, resource)
+        print(f'  (effectively {stock})')
+    proposer_stockpiles[resource] = stock
 
-all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpile]
+all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpiles[o.resource]]
 all_asks = [o for o in orders if o.type == TradeType.ASK]
 
 def executable(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
     assert ask.type == TradeType.ASK
-    return (bid.amount <= ask.amount)
+    return (bid.resource == ask.resource) and (bid.amount <= ask.amount)
 
 def profit(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
