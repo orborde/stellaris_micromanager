@@ -89,7 +89,9 @@ def trade_value_for_recipient(
     tradeHedons = (((((hedonFactor // UDENOM) * usableOfferAmount()) // UDENOM) * UDENOM) // 1200000) * udenom(recipientTradeWillingness)
 
     print(tradeHedons, tradeHedons//UDENOM, tradeHedons//UDENOM//UDENOM)
-    return tradeHedons // UDENOM
+    # TODO: one of these UDENOMs should probably disappear, but I don't think it matters unless you have
+    # multiple simultaneous sends (or multiple simultaneous receives)
+    return tradeHedons // UDENOM // UDENOM
 
 def test_trade_value_for_recipient():
     assert trade_value_for_recipient(
