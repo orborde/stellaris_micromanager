@@ -261,6 +261,8 @@ def profit(bid: Offer, ask: Offer):
     assert executable(bid, ask)
     return bid.energy - ask.energy
 
+date = gamestate['date'][0]
+print(f'DATE: {date}')
 print(f'{len(all_bids)} bids, {len(all_asks)} asks')
 
 for resource in resources:
