@@ -49,6 +49,7 @@ def trade_value_for_recipient(
     recipientTradeWillingness: float, # [0,1]
     recipientCurrentStockpile: float,
     recipientResourceCap: int,
+    debug=False,
 ):
     rawAIWeight = udenom(AI_WEIGHTS[resource])
     def usableOfferAmount():
@@ -58,7 +59,7 @@ def trade_value_for_recipient(
             udenom(recipientCurrentStockpile)
         )
 
-        print('headRoom', headRoom, headRoom//UDENOM)
+        if debug: print('headRoom', headRoom, headRoom//UDENOM)
         if headRoom > udenom(offeredAmount): # TODO: this inverts the equation in code
             return udenom(offeredAmount)
         elif headRoom <= 0:
@@ -74,7 +75,7 @@ def trade_value_for_recipient(
             return UDENOM
         return adj
 
-    print('adjustedAIWeight', adjustedAIWeight())
+    if debug: print('adjustedAIWeight', adjustedAIWeight())
     hedonFactor = (
         ((adjustedAIWeight() * 100000) //
         (((TRADE_VALUE_RESOURCE_INCOME_BASE * 2 + udenom(senderIncome) + udenom(recipientIncome))
@@ -83,12 +84,12 @@ def trade_value_for_recipient(
         TRADE_VALUE_RESOURCE
     )
 
-    print('hedonFactor', hedonFactor, hedonFactor//UDENOM)
-    print(usableOfferAmount(), usableOfferAmount()//UDENOM)
+    if debug: print('hedonFactor', hedonFactor, hedonFactor//UDENOM)
+    if debug: print(usableOfferAmount(), usableOfferAmount()//UDENOM)
 
     tradeHedons = (((((hedonFactor // UDENOM) * usableOfferAmount()) // UDENOM) * UDENOM) // 1200000) * udenom(recipientTradeWillingness)
 
-    print(tradeHedons, tradeHedons//UDENOM, tradeHedons//UDENOM//UDENOM)
+    if debug: print(tradeHedons, tradeHedons//UDENOM, tradeHedons//UDENOM//UDENOM)
     # TODO: one of these UDENOMs should probably disappear, but I don't think it matters unless you have
     # multiple simultaneous sends (or multiple simultaneous receives)
     return tradeHedons // UDENOM // UDENOM
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('recipientCurrentStockpile', type=float)
     parser.add_argument('--recipientResourceCap', type=int, default=25000)
     args = parser.parse_args()
-    trade_value_for_recipient(
+    print(trade_value_for_recipient(
         resource=args.resource,
         offeredAmount=args.offeredAmount,
         senderIncome=args.senderIncome,
@@ -123,4 +124,4 @@ if __name__ == '__main__':
         recipientTradeWillingness=args.recipientTradeWillingness,
         recipientCurrentStockpile=args.recipientCurrentStockpile,
         recipientResourceCap=args.recipientResourceCap,
-    )
+    ))
