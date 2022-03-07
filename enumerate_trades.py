@@ -6,6 +6,8 @@ import itertools
 import json
 import pathlib
 
+from tqdm import tqdm
+
 from trade_value import *
 
 # TODO: read from game files
@@ -185,8 +187,7 @@ def generate_asks(partner, resource: Resource, trade_willingness: float):
 
 
 orders = []
-
-for partner_name in friendly_enough_to_trade:
+for partner_name in tqdm(friendly_enough_to_trade):
     personality = countries_by_name[partner_name]['personality'][0]
     if personality not in PERSONALITY_TRADE_WILLINGNESS:
         print(f"{partner_name} has unknown personality {personality}")
@@ -197,15 +198,9 @@ for partner_name in friendly_enough_to_trade:
     partner = countries_by_name[partner_name]
     bids = list(generate_bids(partner, args.resource, trade_willingness))
     asks = list(generate_asks(partner, args.resource, trade_willingness))
-
+    print(f"{len(bids)} bids, {len(asks)} asks")
     orders.extend(bids)
     orders.extend(asks)
-
-    for bid in bids[:args.book_size]:
-        print(bid)
-    for ask in asks[:args.book_size]:
-        print(ask)
-    print()
 
 # TODO: handle more gracefully
 proposer_stockpile = proposer_resources[args.resource]
@@ -216,14 +211,6 @@ print(f'effectively {proposer_stockpile}')
 
 all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpile]
 all_asks = [o for o in orders if o.type == TradeType.ASK]
-
-all_bids.sort(key=lambda o: o.price())
-all_asks.sort(key=lambda o: o.price())
-
-for o in all_bids[-args.book_size:]:
-    print(o)
-for o in all_asks[:args.book_size]:
-    print(o)
 
 def executable(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
@@ -237,10 +224,14 @@ def profit(bid: Offer, ask: Offer):
     return bid.energy - ask.energy
 
 print(f'{len(all_bids)} bids, {len(all_asks)} asks')
-matches = [(bid, ask) for bid,ask in itertools.product(all_bids, all_asks) if executable(bid, ask)]
-matches.sort(key=lambda m: profit(m[0], m[1]))
-print(f'{len(matches)} matches')
-for bid,ask in matches[-args.book_size:]:
+matches = [
+    (bid, ask)
+    for bid,ask in itertools.product(all_bids, all_asks)
+    if executable(bid, ask) and profit(bid, ask) > 0
+]
+matches.sort(key=lambda m: profit(m[0], m[1]), reverse=True)
+print(f'{len(matches)} profitable matches')
+for bid,ask in reversed(matches[:args.book_size]):
     print(bid)
     print(ask)
     print(min(bid.amount, ask.amount), profit(bid, ask))
