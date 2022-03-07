@@ -115,8 +115,14 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
             return resource_back
 
 
+def generate_bids(partner, resource: Resource, trade_willingness: float):
+    for offeredAmount, val in generate_minimal_steps(proposer, partner, resource, trade_willingness):
+        price = find_maximal_for(partner, val, Resource.energy)
+        yield (offeredAmount, price)
+
+
 for partner_name in friendly_enough_to_trade:
     print(partner_name, ids_by_name[partner_name])
     partner = countries_by_name[partner_name]
-    for offeredAmount, val in generate_minimal_steps(proposer, partner, args.resource, args.trade_willingness):
-        print(offeredAmount, find_maximal_for(partner, val, Resource.energy))
+    for bid in generate_bids(partner, args.resource, args.trade_willingness):
+        print(bid)
