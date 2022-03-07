@@ -43,7 +43,7 @@ def resources_for(country):
 recipient_resources = resources_for(recipient)
 proposer_resources = resources_for(proposer)
 
-def generate_steps(proposer, recipient, resource: Resource, trade_willingness: float):
+def generate_steps(proposer, recipient):
     last_val = 0
     for offeredAmount in range(100):
         val = trade_value_for_recipient(
