@@ -198,7 +198,7 @@ class Offer:
         return self.energy / self.amount
 
     def __str__(self):
-        return f"{self.type.value} {self.resource:20s} {self.price():8.2f} {self.amount} {self.energy} {self.who}"
+        return f"{self.type.value} {self.resource.value} {self.price():3.2f} {self.amount} {self.energy} {self.who}"
 
 
 def generate_bids(partner, resource: Resource, trade_willingness: float):
