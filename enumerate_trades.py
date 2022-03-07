@@ -243,18 +243,19 @@ def internal_market_orders():
         if resource not in MARKET_BASE_PRICES:
             continue
 
+        min_qty = 100 / MARKET_BASE_PRICES[resource]
         yield Offer(
             TradeType.ASK,
             resource,
             '(internal market)',
-            amount=100,
+            amount=min_qty,
             energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 + args.market_fee)),
         )
         yield Offer(
             TradeType.BID,
             resource,
             '(internal market)',
-            amount=100,
+            amount=min_qty,
             energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 - args.market_fee)),
         )
 
