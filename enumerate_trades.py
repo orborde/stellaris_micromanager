@@ -124,6 +124,18 @@ def resources_for(country):
 
 proposer_resources = resources_for(proposer)
 
+def bisect(lo: int, hi: int, predicate):
+    assert predicate(hi)
+    assert not predicate(lo)
+    while lo+1 < hi:
+        mid = (lo + hi) // 2
+        if predicate(mid):
+            hi = mid
+        else:
+            lo = mid
+    assert lo+1 == hi
+    return lo,hi
+
 def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingness: float):
     sender_resources = resources_for(sender)
     recipient_resources = resources_for(recipient)
@@ -145,8 +157,7 @@ def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingn
 def find_maximal_for(partner, trade_value: int, resource: Resource):
     partner_resources = resources_for(partner)
     partner_stockpile = int(partner_resources[resource])
-
-    def tvr(resource_back: int):
+    def tvr(resource_back: int) -> int:
         return trade_value_for_recipient(
             resource=resource,
             offeredAmount=resource_back,
@@ -157,13 +168,15 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
             recipientResourceCap=25000, # TODO: read from save file somehow
         )
 
-    if trade_value - tvr(partner_stockpile) >= 1:
-        return partner_stockpile
-
-    for resource_back in range(partner_stockpile, 0, -1):
+    def predicate(resource_back: int) -> bool:
         val = tvr(resource_back)
-        if trade_value - val == 1:
-            return resource_back
+        return trade_value - val < 1
+
+    if not predicate(int(partner_stockpile)):
+        return int(partner_stockpile)
+
+    maximal, _ = bisect(0, int(partner_stockpile), predicate)
+    return maximal
 
 class TradeType(enum.Enum):
     BID = 'BID'
