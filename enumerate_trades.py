@@ -249,14 +249,14 @@ def internal_market_orders():
             resource,
             '(internal market)',
             amount=min_qty,
-            energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 + args.market_fee)),
+            energy=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + args.market_fee)),
         )
         yield Offer(
             TradeType.BID,
             resource,
             '(internal market)',
             amount=min_qty,
-            energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 - args.market_fee)),
+            energy=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - args.market_fee)),
         )
 
 orders = []
