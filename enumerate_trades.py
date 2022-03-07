@@ -98,23 +98,25 @@ def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingn
             yield (offeredAmount, val)
         last_val = val
 
-def find_energy_price_for(recipient, trade_value: int):
-    for energyBack in range(1000, 0, -1):
-        energy_val = trade_value_for_recipient(
-            resource=Resource.energy,
-            offeredAmount=energyBack,
-            senderIncome=income(recipient, Resource.energy),
-            recipientIncome=income(proposer, Resource.energy),
+def find_maximal_for(partner, trade_value: int, resource: Resource):
+    partner_resources = resources_for(partner)
+    partner_stockpile = partner_resources[resource]
+    for resource_back in range(int(partner_stockpile), 0, -1):
+        val = trade_value_for_recipient(
+            resource=resource,
+            offeredAmount=resource_back,
+            senderIncome=income(partner, resource),
+            recipientIncome=income(proposer, resource),
             recipientTradeWillingness=1,
-            recipientCurrentStockpile=proposer_resources[Resource.energy],
+            recipientCurrentStockpile=proposer_resources[resource],
             recipientResourceCap=25000, # TODO: read from save file somehow
         )
-        if trade_value - energy_val == 1:
-            return energyBack
+        if trade_value - val == 1:
+            return resource_back
 
 
 for partner_name in friendly_enough_to_trade:
     print(partner_name, ids_by_name[partner_name])
     partner = countries_by_name[partner_name]
     for offeredAmount, val in generate_minimal_steps(proposer, partner, args.resource, args.trade_willingness):
-        print(offeredAmount, find_energy_price_for(partner, val))
+        print(offeredAmount, find_maximal_for(partner, val, Resource.energy))
