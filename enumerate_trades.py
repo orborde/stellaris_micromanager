@@ -28,23 +28,46 @@ def income(country, resource: Resource):
         if d[0] is not None and resource.value in d[0])
 
 
-recipient_resources = {
-    Resource(k): float(v[0])
-    for k, v in recipient['modules'][0]['standard_economy_module'][0]['resources'][0].items()
-    if k in Resource.__members__
-}
+def resources_for(country):
+    return {
+        Resource(k): float(v[0])
+        for k, v in country['modules'][0]['standard_economy_module'][0]['resources'][0].items()
+        if k in Resource.__members__
+    }
 
-last_val = None
-for offeredAmount in range(300):
-    val = trade_value_for_recipient(
-        resource=args.resource,
-        offeredAmount=offeredAmount,
-        senderIncome=income(proposer, args.resource),
-        recipientIncome=income(recipient, args.resource),
-        recipientTradeWillingness=args.trade_willingness,
-        recipientCurrentStockpile=recipient_resources[args.resource],
-        recipientResourceCap=25000, # TODO: read from save file somehow
-    )
-    if last_val != val:
-        print(offeredAmount, val)
-    last_val = val
+recipient_resources = resources_for(recipient)
+proposer_resources = resources_for(proposer)
+
+def generate_steps(proposer, recipient, resource: Resource, trade_willingness: float):
+    last_val = 0
+    for offeredAmount in range(100):
+        val = trade_value_for_recipient(
+            resource=args.resource,
+            offeredAmount=offeredAmount,
+            senderIncome=income(proposer, args.resource),
+            recipientIncome=income(recipient, args.resource),
+            recipientTradeWillingness=args.trade_willingness,
+            recipientCurrentStockpile=recipient_resources[args.resource],
+            recipientResourceCap=25000, # TODO: read from save file somehow
+        )
+        if last_val != val:
+            yield (offeredAmount, val)
+        last_val = val
+
+def find_energy_price_for(trade_value: int):
+    for energyBack in range(1000, 0, -1):
+        energy_val = trade_value_for_recipient(
+            resource=Resource.energy,
+            offeredAmount=energyBack,
+            senderIncome=income(recipient, Resource.energy),
+            recipientIncome=income(proposer, Resource.energy),
+            recipientTradeWillingness=1,
+            recipientCurrentStockpile=proposer_resources[Resource.energy],
+            recipientResourceCap=25000, # TODO: read from save file somehow
+        )
+        if trade_value - energy_val == 1:
+            return energyBack
+
+
+for offeredAmount, val in generate_steps(proposer, recipient, args.resource, args.trade_willingness):
+    print(offeredAmount, val, find_energy_price_for(val))
