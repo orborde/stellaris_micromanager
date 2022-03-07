@@ -25,6 +25,7 @@ parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but co
 parser.add_argument("proposer", type=str)
 parser.add_argument("trade_willingness", type=float) # TODO: read from save file instead
 parser.add_argument("resource", type=Resource, choices=[c for c in Resource])
+parser.add_argument("--book_size", type=int, default=3)
 args = parser.parse_args()
 
 with open(args.save_file_json) as f:
@@ -120,9 +121,20 @@ def generate_bids(partner, resource: Resource, trade_willingness: float):
         price = find_maximal_for(partner, val, Resource.energy)
         yield (offeredAmount, price)
 
+def generate_asks(partner, resource: Resource, trade_willingness: float):
+    for energy_amt, val in generate_minimal_steps(partner, proposer, Resource.energy, trade_willingness):
+        volume = find_maximal_for(partner, val, resource)
+        yield (volume, energy_amt)
+
 
 for partner_name in friendly_enough_to_trade:
     print(partner_name, ids_by_name[partner_name])
     partner = countries_by_name[partner_name]
-    for bid in generate_bids(partner, args.resource, args.trade_willingness):
-        print(bid)
+    bids = list(generate_bids(partner, args.resource, args.trade_willingness))
+    asks = list(generate_asks(partner, args.resource, args.trade_willingness))
+
+    for volume,price in bids[:args.book_size]:
+        print(f"  BID {volume} @ {price}")
+    for volume,price in asks[:args.book_size]:
+        print(f"  ASK {volume} @ {price}")
+    print()
