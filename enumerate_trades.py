@@ -258,10 +258,6 @@ def internal_market_orders():
             energy=int(100*MARKET_BASE_PRICES[resource] * fluctuation * (1 - args.market_fee)),
         )
 
-print('INTERNAL MARKET')
-for order in internal_market_orders():
-    print(order)
-
 orders = []
 orders.extend(internal_market_orders())
 for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trade, resources))):
