@@ -6,10 +6,23 @@ import pathlib
 
 from trade_value import *
 
+# TODO: read from game files
+TRADEABLE_STANCES = {
+    'neutral',
+    'wary',
+    'receptive',
+    'cordial',
+    'friendly',
+    'protective',
+    'loyal',
+    'patronizing',
+    'custodial',
+    'enigmatic',
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
 parser.add_argument("proposer", type=str)
-parser.add_argument("recipient", type=str)
 parser.add_argument("trade_willingness", type=float) # TODO: read from save file instead
 parser.add_argument("resource", type=Resource, choices=[c for c in Resource])
 args = parser.parse_args()
@@ -17,14 +30,39 @@ args = parser.parse_args()
 with open(args.save_file_json) as f:
     gamestate = json.load(f)
 
-countries = gamestate['country'][0]
+countries = {
+    k: v
+    for k, v in gamestate['country'][0].items()
+    if type(v[0]) == dict
+}
 countries_by_name = {
     c[0]['name'][0]: c[0]
     for c in countries.values()
-    if type(c[0]) is dict # seriously wtf
+}
+ids_by_name = {
+    v[0]['name'][0]: k
+    for k, v in countries.items()
 }
 proposer = countries_by_name[args.proposer]
-recipient = countries_by_name[args.recipient]
+proposer_id = ids_by_name[args.proposer]
+
+friendly_enough_to_trade = []
+for name, country in countries_by_name.items():
+    if name == args.proposer:
+        continue
+    if 'attitude' not in country['ai'][0]:
+        # print(f"{name} has no attitude?")
+        continue
+    attitude_list = country['ai'][0]['attitude'][0]
+    attitude_towards_me = [c for c in attitude_list if c['country'][0] == proposer_id]
+    if len(attitude_towards_me) == 0:
+        # print(f"{name} has no attitude towards {args.proposer}")
+        continue
+    assert len(attitude_towards_me) == 1
+    attitude_towards_me = attitude_towards_me[0]
+    if attitude_towards_me['attitude'][0] in TRADEABLE_STANCES:
+        friendly_enough_to_trade.append(name)
+friendly_enough_to_trade.sort()
 
 def income(country, resource: Resource):
     return sum(
@@ -40,26 +78,26 @@ def resources_for(country):
         if k in Resource.__members__
     }
 
-recipient_resources = resources_for(recipient)
 proposer_resources = resources_for(proposer)
 
-def generate_steps(proposer, recipient):
+def generate_steps(proposer, recipient, resource: Resource, trade_willingness: float):
+    recipient_resources = resources_for(recipient)
     last_val = 0
     for offeredAmount in range(100):
         val = trade_value_for_recipient(
-            resource=args.resource,
+            resource=resource,
             offeredAmount=offeredAmount,
-            senderIncome=income(proposer, args.resource),
-            recipientIncome=income(recipient, args.resource),
-            recipientTradeWillingness=args.trade_willingness,
-            recipientCurrentStockpile=recipient_resources[args.resource],
+            senderIncome=income(proposer, resource),
+            recipientIncome=income(recipient, resource),
+            recipientTradeWillingness=trade_willingness,
+            recipientCurrentStockpile=recipient_resources[resource],
             recipientResourceCap=25000, # TODO: read from save file somehow
         )
         if last_val != val:
             yield (offeredAmount, val)
         last_val = val
 
-def find_energy_price_for(trade_value: int):
+def find_energy_price_for(recipient, trade_value: int):
     for energyBack in range(1000, 0, -1):
         energy_val = trade_value_for_recipient(
             resource=Resource.energy,
@@ -74,5 +112,8 @@ def find_energy_price_for(trade_value: int):
             return energyBack
 
 
-for offeredAmount, val in generate_steps(proposer, recipient, args.resource, args.trade_willingness):
-    print(offeredAmount, val, find_energy_price_for(val))
+for partner_name in friendly_enough_to_trade:
+    print(partner_name, ids_by_name[partner_name])
+    partner = countries_by_name[partner_name]
+    for offeredAmount, val in generate_steps(proposer, partner, args.resource, args.trade_willingness):
+        print(offeredAmount, find_energy_price_for(partner, val))
