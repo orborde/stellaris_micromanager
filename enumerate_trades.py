@@ -55,6 +55,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("save_file_json", type=pathlib.Path, help="Save file, but converted to JSON")
 parser.add_argument("proposer", type=str)
 parser.add_argument("resources", type=str)
+parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
 args = parser.parse_args()
 
@@ -246,3 +247,7 @@ for bid,ask in reversed(matches[:args.book_size]):
     print(ask)
     print(min(bid.amount, ask.amount), profit(bid, ask))
     print()
+
+if args.print_full_book:
+    for o in sorted(orders, key=lambda o: o.price()):
+        print(o)
