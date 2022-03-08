@@ -234,6 +234,8 @@ def internal_market_orders():
     internal_market_infos = gamestate['market'][0]['internal_market_fluctuations'][0]
     market_infos = dict(zip(internal_market_infos['country'], internal_market_infos['resources']))
     proposer_market_info = market_infos[proposer_id]
+    if proposer_market_info is None: # WTF
+        proposer_market_info = {}
     for resource in resources:
         if resource.value in proposer_market_info:
             fluctuation = 1+float(proposer_market_info[resource.value][0])/100
