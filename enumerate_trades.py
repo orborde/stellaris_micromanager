@@ -308,7 +308,8 @@ date = gamestate['date'][0]
 print(f'DATE: {date}')
 print(f'{len(all_bids)} bids, {len(all_asks)} asks')
 
-for resource in resources:
+matches = []
+for resource in tqdm(resources):
     bids = [o for o in all_bids if o.resource == resource]
     asks = [o for o in all_asks if o.resource == resource]
     print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
@@ -317,11 +318,12 @@ for resource in resources:
     if len(asks) > 0:
         print('  ', min(asks, key=lambda o: o.price()))
 
-matches = [
-    (bid, ask)
-    for bid,ask in tqdm(list(itertools.product(all_bids, all_asks)))
-    if executable(bid, ask) and profit(bid, ask) > 0
-]
+    matches.extend(
+        (bid, ask)
+        for bid,ask in itertools.product(bids, asks)
+        if executable(bid, ask) and profit(bid, ask) > 0
+    )
+
 matches.sort(key=lambda m: profit(m[0], m[1]), reverse=True)
 print(f'{len(matches)} profitable matches')
 for bid,ask in reversed(matches[:args.book_size]):
