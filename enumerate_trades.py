@@ -87,13 +87,25 @@ ids_by_name = {
 proposer = countries_by_name[args.proposer]
 proposer_id = ids_by_name[args.proposer]
 
+communicating_countries = set([
+    relation['country'][0]
+    for relation in proposer['relations_manager'][0]['relation']
+    if 'communications' in relation and relation['communications'][0] == 'yes'
+])
+
 friendly_enough_to_trade = []
 for name, country in countries_by_name.items():
     if name == args.proposer:
         continue
+
     if 'attitude' not in country['ai'][0]:
         # print(f"{name} has no attitude?")
         continue
+
+    if ids_by_name[name] not in communicating_countries:
+        print(f"{name} not contacted")
+        continue
+
     attitude_list = country['ai'][0]['attitude'][0]
     attitude_towards_me = [c for c in attitude_list if c['country'][0] == proposer_id]
     if len(attitude_towards_me) == 0:
