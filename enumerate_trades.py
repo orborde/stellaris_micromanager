@@ -160,11 +160,16 @@ def resource_cap_for(recipient, resource: Resource):
         return None
     return DEFAULT_RESOURCE_CAPS[resource]
 
+def sendable_resources_for(sender, resource: Resource):
+    if sender is proposer:
+        return resources_for(sender)[resource]
+    return max(0, resources_for(sender)[resource] - 500)
+
 def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingness: float):
-    sender_resources = resources_for(sender)
+    sendable_resources = sendable_resources_for(sender, resource)
     recipient_resources = resources_for(recipient)
     last_val = 0
-    for offeredAmount in range(int(sender_resources[resource])+1):
+    for offeredAmount in range(int(sendable_resources)+1):
         val = trade_value_for_recipient(
             resource=resource,
             offeredAmount=offeredAmount,
@@ -179,8 +184,7 @@ def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingn
         last_val = val
 
 def find_maximal_for(partner, trade_value: int, resource: Resource):
-    partner_resources = resources_for(partner)
-    partner_stockpile = int(partner_resources[resource])
+    partner_sendable_resources = int(sendable_resources_for(partner, resource))
     def tvr(resource_back: int) -> int:
         return trade_value_for_recipient(
             resource=resource,
@@ -196,10 +200,10 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
         val = tvr(resource_back)
         return trade_value - val < 1
 
-    if not predicate(int(partner_stockpile)):
-        return int(partner_stockpile)
+    if not predicate(partner_sendable_resources):
+        return partner_sendable_resources
 
-    maximal, _ = bisect(0, int(partner_stockpile), predicate)
+    maximal, _ = bisect(0, partner_sendable_resources, predicate)
     return maximal
 
 class TradeType(enum.Enum):
