@@ -320,7 +320,7 @@ all_asks = [o for o in orders if o.type == TradeType.ASK]
 def executable(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
     assert ask.type == TradeType.ASK
-    return (bid.resource == ask.resource) and (bid.amount <= ask.amount)
+    return (bid.resource == ask.resource) and (bid.amount <= ask.amount) and (bid.who != ask.who)
 
 def profit(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
