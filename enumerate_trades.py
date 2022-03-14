@@ -103,7 +103,7 @@ for name, country in countries_by_name.items():
         continue
 
     if ids_by_name[name] not in communicating_countries:
-        print(f"{name} not contacted")
+        # print(f"{name} not contacted")
         continue
 
     attitude_list = country['ai'][0]['attitude'][0]
