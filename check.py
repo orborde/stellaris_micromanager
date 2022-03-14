@@ -6,6 +6,7 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile")
+parser.add_argument("target_countries", nargs='+', type=str)
 parser.add_argument(
     '--show-modifier-time-remaining', default=False, type=bool,
     help="Show remaining time on timed modifiers")
@@ -13,18 +14,6 @@ args = parser.parse_args()
 
 with open(args.infile) as i:
     gamestate = json.load(i)
-
-
-# TARGET_COUNTRIES={
-#     "Unified Consciousness",
-#     "CUDDLE PUDDLE",
-# }
-
-
-TARGET_COUNTRIES={
-    'Interstellar Orc Horde',
-    'YOLO',
-}
 
 def check_timed_modifier(country, modifier: str):
     if 'timed_modifier' not in country:
@@ -87,7 +76,7 @@ for cid, c in countries.items():
 
     c=c[0]
     name=c['name'][0]
-    if name not in TARGET_COUNTRIES:
+    if name not in args.target_countries:
         continue
 
     tech = c['tech_status'][0]
