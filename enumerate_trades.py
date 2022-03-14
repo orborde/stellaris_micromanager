@@ -142,6 +142,11 @@ def bisect(lo: int, hi: int, predicate):
     assert lo+1 == hi
     return lo,hi
 
+def resource_cap_for(recipient, resource: Resource):
+    if recipient is proposer:
+        return None
+    return DEFAULT_RESOURCE_CAPS[resource]
+
 def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingness: float):
     sender_resources = resources_for(sender)
     recipient_resources = resources_for(recipient)
@@ -154,7 +159,7 @@ def generate_minimal_steps(sender, recipient, resource: Resource, trade_willingn
             recipientIncome=income(recipient, resource),
             recipientTradeWillingness=trade_willingness,
             recipientCurrentStockpile=recipient_resources[resource],
-            recipientResourceCap=25000, # TODO: read from save file somehow
+            recipientResourceCap=resource_cap_for(recipient, resource), # TODO: read from save file somehow
         )
         if last_val != val:
             yield (offeredAmount, val)
@@ -171,7 +176,7 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
             recipientIncome=income(proposer, resource),
             recipientTradeWillingness=1,
             recipientCurrentStockpile=proposer_resources[resource],
-            recipientResourceCap=25000, # TODO: read from save file somehow
+            recipientResourceCap=resource_cap_for(partner, resource), # TODO: read from save file somehow
         )
 
     def predicate(resource_back: int) -> bool:

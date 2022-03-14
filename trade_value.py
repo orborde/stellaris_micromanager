@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 import enum
-from multiprocessing import allow_connection_pickling
+from typing import *
 
 
 UDENOM = 100000
@@ -40,6 +40,20 @@ AI_WEIGHTS = {
     Resource.nanites: 100,
 }
 
+DEFAULT_RESOURCE_CAPS = {
+    Resource.energy: 50000,
+    Resource.minerals: 15000,
+    Resource.food: 15000,
+    Resource.consumer_goods: 15000,
+    Resource.alloys: 15000,
+    Resource.volatile_motes: None,
+    Resource.exotic_gases: None,
+    Resource.rare_crystals: None,
+    Resource.sr_zro: None,
+    Resource.sr_dark_matter: None,
+    Resource.nanites: None,
+}
+
 def trade_value_for_recipient(
     resource: Resource,
     offeredAmount: int,
@@ -48,11 +62,14 @@ def trade_value_for_recipient(
     recipientIncome: float,
     recipientTradeWillingness: float, # [0,1]
     recipientCurrentStockpile: float,
-    recipientResourceCap: int,
+    recipientResourceCap: Optional[int],
     debug=False,
 ):
     rawAIWeight = udenom(AI_WEIGHTS[resource])
     def usableOfferAmount():
+        if recipientResourceCap is None:
+            return udenom(offeredAmount)
+
         headRoom = (
             (OFFER_TRADE_MIN_RESOURCE_THRESHOLD * udenom(recipientResourceCap)) // UDENOM
             -
