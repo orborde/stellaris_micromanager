@@ -59,6 +59,7 @@ parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
 parser.add_argument("--progress", action="store_true")
 parser.add_argument("--market_fee", type=float, default=0.3)
+parser.add_argument("--always_show_market", action="store_true")
 args = parser.parse_args()
 
 if args.resources == 'all':
@@ -251,7 +252,7 @@ def internal_market_orders():
             continue
 
         min_qty = 100 // MARKET_BASE_PRICES[resource]
-        if fluctuation <= 1:
+        if fluctuation <= 1 or args.always_show_market:
             yield Offer(
                 TradeType.ASK,
                 resource,
@@ -259,7 +260,7 @@ def internal_market_orders():
                 amount=min_qty,
                 energy=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + args.market_fee)),
             )
-        if fluctuation >= 1:
+        if fluctuation >= 1 or args.always_show_market:
             yield Offer(
                 TradeType.BID,
                 resource,
