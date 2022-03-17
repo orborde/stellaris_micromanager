@@ -307,7 +307,7 @@ for partner_name,resource in tqdm(list(itertools.product(friendly_enough_to_trad
 
 # TODO: handle more gracefully
 proposer_stockpiles = {}
-for resource in resources:
+for resource in Resource:
     stock = proposer_resources[resource]
     # print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
     if balance(proposer, resource) < 0:
@@ -321,7 +321,13 @@ all_asks = [o for o in orders if o.type == TradeType.ASK]
 def executable(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
     assert ask.type == TradeType.ASK
-    return (bid.resource == ask.resource) and (bid.amount <= ask.amount) and (bid.who != ask.who)
+    return (
+        (bid.resource == ask.resource) and
+        (bid.amount <= ask.amount) and
+        (bid.who != ask.who) and
+        (bid.amount <= proposer_stockpiles[bid.resource]) and
+        (ask.energy <= proposer_stockpiles[args.optimize])
+    )
 
 def profit(bid: Offer, ask: Offer):
     assert bid.type == TradeType.BID
