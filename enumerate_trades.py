@@ -193,7 +193,7 @@ def find_maximal_for(partner, trade_value: int, resource: Resource):
             recipientIncome=income(proposer, resource),
             recipientTradeWillingness=1,
             recipientCurrentStockpile=proposer_resources[resource],
-            recipientResourceCap=resource_cap_for(partner, resource), # TODO: read from save file somehow
+            recipientResourceCap=None, # resource cap does not apply to proposer valuation
         )
 
     def predicate(resource_back: int) -> bool:
