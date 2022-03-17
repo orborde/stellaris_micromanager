@@ -60,10 +60,11 @@ parser.add_argument("--book_size", type=int, default=3)
 parser.add_argument("--progress", action="store_true")
 parser.add_argument("--market_fee", type=float, default=0.3)
 parser.add_argument("--always_show_market", action="store_true")
+parser.add_argument("--optimize", type=Resource, default=Resource.energy)
 args = parser.parse_args()
 
 if args.resources == 'all':
-    resources = [r for r in Resource if r is not Resource.energy]
+    resources = [r for r in Resource if r is not args.optimize]
 else:
     resources = [Resource(r) for r in args.resources.split(',')]
 # print('Processing resource list:', [r.value for r in resources])
@@ -227,14 +228,14 @@ class Offer:
 
 def generate_bids(partner, resource: Resource, trade_willingness: float):
     for volume, val in generate_minimal_steps(proposer, partner, resource, trade_willingness):
-        energy_amt = find_maximal_for(partner, val, Resource.energy)
+        energy_amt = find_maximal_for(partner, val, args.optimize)
         if energy_amt is None:
             # TODO: figure out exactly what is happening for these
             continue
         yield Offer(TradeType.BID, resource, partner['name'][0], volume, energy_amt)
 
 def generate_asks(partner, resource: Resource, trade_willingness: float):
-    for energy_amt, val in generate_minimal_steps(partner, proposer, Resource.energy, trade_willingness):
+    for energy_amt, val in generate_minimal_steps(partner, proposer, args.optimize, trade_willingness):
         volume = find_maximal_for(partner, val, resource)
         if volume is None or volume == 0:
             # TODO: figure out exactly what is happening for these
