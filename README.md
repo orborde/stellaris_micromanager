@@ -31,6 +31,10 @@ This script watches the savegame directory for new autosaves, and reruns the too
 
 Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is enabled; this only affects the save game folder path you need to point the poller at.
 
+# Known bugs
+
+* When Stellaris loads a save game, it does not load the monthly income numbers recorded in the save file. Instead, it recalculates them from scratch - incorrectly. As a result, using enumerate_trades.py on the save file will not generate trades that actually work in-game until you hit a month rollover, autosave, and run enumerate_trades on THAT.
+
 # Feature ideas
 ✔ = implemented!️
 
