@@ -57,6 +57,7 @@ parser.add_argument("proposer", type=str)
 parser.add_argument("resources", type=str,help=','.join([r.value for r in Resource]+['all']))
 parser.add_argument("--print_full_book", action="store_true")
 parser.add_argument("--book_size", type=int, default=3)
+parser.add_argument("--matches_to_show", type=int, default=3)
 parser.add_argument("--progress", action="store_true")
 parser.add_argument("--market_fee", type=float, default=0.3)
 parser.add_argument("--always_show_market", action="store_true")
@@ -349,10 +350,10 @@ for resource in tqdm(resources):
     bids = [o for o in all_bids if o.resource == resource]
     asks = [o for o in all_asks if o.resource == resource]
     print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
-    if len(bids) > 0:
-        print('  ', max(bids, key=lambda o: o.price()))
-    if len(asks) > 0:
-        print('  ', min(asks, key=lambda o: o.price()))
+    for bid in sorted(bids, key=lambda o: o.price(), reverse=True)[:args.book_size]:
+        print('  ', bid)
+    for ask in sorted(asks, key=lambda o: o.price())[:args.book_size]:
+        print('  ', ask)
 
     matches.extend(
         (bid, ask)
@@ -362,7 +363,7 @@ for resource in tqdm(resources):
 
 matches.sort(key=lambda m: profit(m[0], m[1]), reverse=True)
 print(f'{len(matches)} profitable matches')
-for bid,ask in reversed(matches[:args.book_size]):
+for bid,ask in reversed(matches[:args.matches_to_show]):
     print(bid)
     print(ask)
     print(min(bid.amount, ask.amount), profit(bid, ask))
