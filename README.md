@@ -38,6 +38,7 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
 # Feature ideas
 ✔ = implemented!️
 
+## check.py
 * Detect research agreement participants researching the same technology simultaneously ✔️
 * Agreement checks️
   * Artisan troupe
@@ -86,3 +87,9 @@ Set Stellaris to autosave monthly. It doesn't matter whether "Save to Cloud" is 
 * (if you can figure out how to _write_ the save format) Modify save to have an optimal setup
   * Meticulous scientists
   * Scientists with the optimal specialties for the "make research faster" techs
+
+## enumerate_trades.py
+
+* **N-hop trades**:
+  * Sometimes you can trade energy for food, then food for alloys at a better exchange rate than energy directly for alloys.
+  * Are there N-hop arbitrages, too?
