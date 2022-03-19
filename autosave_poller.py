@@ -23,7 +23,9 @@ args = parser.parse_args()
 interval=float(args.interval)
 
 def execute(path):
+    start = time.time()
     jsondata = subprocess.check_output(['./sav2json', '-infile', path])
+    parsed = time.time()
     if args.json_archive != "":
         copy_path = args.json_archive / (os.path.basename(path) + ".json")
         with open(copy_path, 'wb') as f:
@@ -34,7 +36,8 @@ def execute(path):
         tf.flush()
 
         subprocess.check_call([args.cmd, tf.name])
-    print('...analyzed!')
+    analyzed = time.time()
+    print(f'...analyzed! (parsed: {parsed-start:.2f}s, analyzed: {analyzed-parsed:.2f}s)')
 
 
 last_processed = None
