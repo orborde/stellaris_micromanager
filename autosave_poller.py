@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path
+import pathlib
 import shutil
 import subprocess
 import tempfile
@@ -15,12 +16,19 @@ parser.add_argument('--interval', type=int, default=1, help='poll interval (seco
 parser.add_argument(
     '--dump_location', default='/tmp/broken.sav',
     help='when the subcommand fails, put the offending savegame at this path')
+parser.add_argument('--json_archive', type=pathlib.Path, default="",
+    help="If set, put a copy of generated JSON file here")
 args = parser.parse_args()
 
 interval=float(args.interval)
 
 def execute(path):
     jsondata = subprocess.check_output(['./sav2json', '-infile', path])
+    if args.json_archive != "":
+        copy_path = args.json_archive / (os.path.basename(path) + ".json")
+        with open(copy_path, 'wb') as f:
+            f.write(jsondata)
+            print('wrote a copy to', copy_path)
     with tempfile.NamedTemporaryFile() as tf:
         tf.write(jsondata)
         tf.flush()
