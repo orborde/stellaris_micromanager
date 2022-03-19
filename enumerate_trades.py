@@ -88,11 +88,14 @@ ids_by_name = {
 proposer = countries_by_name[args.proposer]
 proposer_id = ids_by_name[args.proposer]
 
-communicating_countries = set([
-    relation['country'][0]
-    for relation in proposer['relations_manager'][0]['relation']
-    if 'communications' in relation and relation['communications'][0] == 'yes'
-])
+if 'relations_manager' in proposer:
+    communicating_countries = set([
+        relation['country'][0]
+        for relation in proposer['relations_manager'][0]['relation']
+        if 'communications' in relation and relation['communications'][0] == 'yes'
+    ])
+else:
+    communicating_countries = set()
 
 friendly_enough_to_trade = []
 for name, country in countries_by_name.items():
@@ -254,9 +257,11 @@ MARKET_BASE_PRICES = {
     Resource.sr_dark_matter: 20,
 }
 def internal_market_orders():
+    if 'internal_market_fluctuations' not in gamestate['market'][0]:
+        return []
     internal_market_infos = gamestate['market'][0]['internal_market_fluctuations'][0]
     market_infos = dict(zip(internal_market_infos['country'], internal_market_infos['resources']))
-    proposer_market_info = market_infos[proposer_id]
+    proposer_market_info = market_infos.get(proposer_id, None)
     if proposer_market_info is None: # WTF
         proposer_market_info = {}
     for resource in resources:
