@@ -350,7 +350,7 @@ for resource in tqdm(resources):
     bids = [o for o in all_bids if o.resource == resource]
     asks = [o for o in all_asks if o.resource == resource]
     print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
-    for bid in sorted(bids, key=lambda o: o.price(), reverse=True)[:args.book_size]:
+    for bid in sorted(bids, key=lambda o: o.price())[-args.book_size:]:
         print('  ', bid)
     for ask in sorted(asks, key=lambda o: o.price())[:args.book_size]:
         print('  ', ask)
