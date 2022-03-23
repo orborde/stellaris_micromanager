@@ -155,19 +155,19 @@ class TradeFinder:
 
     def generate_bids(self, partner, resource: Resource, currency: Resource, trade_willingness: float):
         for volume, val in self.generate_minimal_steps(self.proposer, partner, resource, trade_willingness):
-            energy_amt = self.find_maximal_for(partner, val, currency)
-            if energy_amt is None:
+            currency_amt = self.find_maximal_for(partner, val, currency)
+            if currency_amt is None:
                 # TODO: figure out exactly what is happening for these
                 continue
-            yield Offer(TradeType.BID, resource, partner['name'][0], volume, energy_amt)
+            yield Offer(TradeType.BID, resource, partner['name'][0], volume, currency_amt)
 
     def generate_asks(self, partner, resource: Resource, currency: Resource, trade_willingness: float):
-        for energy_amt, val in self.generate_minimal_steps(self.proposer, partner, currency, trade_willingness):
+        for currency_amt, val in self.generate_minimal_steps(self.proposer, partner, currency, trade_willingness):
             volume = self.find_maximal_for(partner, val, resource)
             if volume is None or volume == 0:
                 # TODO: figure out exactly what is happening for these
                 continue
-            yield Offer(TradeType.ASK, resource, partner['name'][0], volume, energy_amt)
+            yield Offer(TradeType.ASK, resource, partner['name'][0], volume, currency_amt)
 
     def internal_market_orders(self, market_fee: float, always_show_market: bool):
         if 'internal_market_fluctuations' not in self.gamestate['market'][0]:
@@ -193,7 +193,7 @@ class TradeFinder:
                     resource,
                     '(internal market)',
                     amount=min_qty,
-                    energy=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + market_fee)),
+                    currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + market_fee)),
                 )
             if fluctuation >= 1 or always_show_market:
                 yield Offer(
@@ -201,7 +201,7 @@ class TradeFinder:
                     resource,
                     '(internal market)',
                     amount=min_qty,
-                    energy=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - market_fee)),
+                    currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - market_fee)),
                 )
 
     def diplomatic_orders(self, currency: Resource):
@@ -263,13 +263,13 @@ class Offer:
     resource: Resource
     who: str
     amount: int
-    energy: int
+    currency: int
 
     def price(self) -> float:
-        return self.energy / self.amount
+        return self.currency / self.amount
 
     def __str__(self):
-        return f"{self.type.value} {self.resource.value} {self.price():3.2f} {self.amount} {self.energy} {self.who}"
+        return f"{self.type.value} {self.resource.value} {self.price():3.2f} {self.amount} {self.currency} {self.who}"
 
 
 MARKET_BASE_PRICES = {
@@ -332,14 +332,14 @@ if __name__ == '__main__':
             (bid.amount <= ask.amount) and
             (bid.who != ask.who) and
             (bid.amount <= proposer_stockpiles[bid.resource]) and
-            (ask.energy <= proposer_stockpiles[args.optimize])
+            (ask.currency <= proposer_stockpiles[args.optimize])
         )
 
     def profit(bid: Offer, ask: Offer):
         assert bid.type == TradeType.BID
         assert ask.type == TradeType.ASK
         assert executable(bid, ask)
-        return bid.energy - ask.energy
+        return bid.currency - ask.currency
 
     date = gamestate['date'][0]
     print(f'DATE: {date}')
