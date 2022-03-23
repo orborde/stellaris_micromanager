@@ -169,42 +169,41 @@ class TradeFinder:
                 continue
             yield Offer(TradeType.ASK, resource, partner['name'][0], volume, currency_amt)
 
-    def internal_market_orders(self, market_fee: float, always_show_market: bool):
+    def internal_market_orders(self, resource: Resource, market_fee: float, always_show_market: bool):
         if 'internal_market_fluctuations' not in self.gamestate['market'][0]:
-            return []
+            return
         internal_market_infos = self.gamestate['market'][0]['internal_market_fluctuations'][0]
         market_infos = dict(zip(internal_market_infos['country'], internal_market_infos['resources']))
         proposer_market_info = market_infos.get(self.proposer_id, None)
         if proposer_market_info is None: # WTF
             proposer_market_info = {}
-        for resource in resources:
-            if resource.value in proposer_market_info:
-                fluctuation = 1+float(proposer_market_info[resource.value][0])/100
-            else:
-                fluctuation = 1
-            # TODO: make sure MARKET_BASE_PRICES matches up without this blind skip?
-            if resource not in MARKET_BASE_PRICES:
-                continue
+        if resource.value in proposer_market_info:
+            fluctuation = 1+float(proposer_market_info[resource.value][0])/100
+        else:
+            fluctuation = 1
+        # TODO: make sure MARKET_BASE_PRICES matches up without this blind skip?
+        if resource not in MARKET_BASE_PRICES:
+            return
 
-            min_qty = 100 // MARKET_BASE_PRICES[resource]
-            if fluctuation <= 1 or always_show_market:
-                yield Offer(
-                    TradeType.ASK,
-                    resource,
-                    '(internal market)',
-                    amount=min_qty,
-                    currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + market_fee)),
-                )
-            if fluctuation >= 1 or always_show_market:
-                yield Offer(
-                    TradeType.BID,
-                    resource,
-                    '(internal market)',
-                    amount=min_qty,
-                    currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - market_fee)),
-                )
+        min_qty = 100 // MARKET_BASE_PRICES[resource]
+        if fluctuation <= 1 or always_show_market:
+            yield Offer(
+                TradeType.ASK,
+                resource,
+                '(internal market)',
+                amount=min_qty,
+                currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 + market_fee)),
+            )
+        if fluctuation >= 1 or always_show_market:
+            yield Offer(
+                TradeType.BID,
+                resource,
+                '(internal market)',
+                amount=min_qty,
+                currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - market_fee)),
+            )
 
-    def diplomatic_orders(self, currency: Resource):
+    def diplomatic_orders(self, currency: Resource, resources):
         for partner_name,resource in tqdm(list(itertools.product(self.friendly_enough_to_trade(), resources))):
             personality = self.countries_by_name[partner_name]['personality'][0]
             if personality not in PERSONALITY_TRADE_WILLINGNESS:
@@ -314,16 +313,17 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.resources == 'all':
-        resources = [r for r in Resource if r is not args.optimize]
+        resources_to_check = [r for r in Resource if r is not args.optimize]
     else:
-        resources = [Resource(r) for r in args.resources.split(',')]
+        resources_to_check = [Resource(r) for r in args.resources.split(',')]
 
     with open(args.save_file_json) as f:
         gamestate = json.load(f)
 
     t = TradeFinder(gamestate, args.proposer)
-    orders = list(t.diplomatic_orders(args.optimize))
-    orders.extend(t.internal_market_orders(args.market_fee, args.always_show_market))
+    orders = list(t.diplomatic_orders(args.optimize, resources_to_check))
+    for resource in resources_to_check:
+        orders.extend(t.internal_market_orders(resource, args.market_fee, args.always_show_market))
 
     proposer_stockpiles = t.proposer_usable_stockpiles()
 
@@ -352,7 +352,7 @@ if __name__ == '__main__':
     print(f'{len(all_bids)} bids, {len(all_asks)} asks')
 
     matches = []
-    for resource in tqdm(resources):
+    for resource in tqdm(resources_to_check):
         bids = [o for o in all_bids if o.resource == resource]
         asks = [o for o in all_asks if o.resource == resource]
         print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
