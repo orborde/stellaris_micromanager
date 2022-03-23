@@ -203,17 +203,16 @@ class TradeFinder:
                 currency=int(min_qty*MARKET_BASE_PRICES[resource] * fluctuation * (1 - market_fee)),
             )
 
-    def diplomatic_orders(self, currency: Resource, resources):
-        for partner_name,resource in tqdm(list(itertools.product(self.friendly_enough_to_trade(), resources))):
-            personality = self.countries_by_name[partner_name]['personality'][0]
-            if personality not in PERSONALITY_TRADE_WILLINGNESS:
-                print(f"{partner_name} has unknown personality {personality}")
-                print()
-                continue
-            trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
-            partner = self.countries_by_name[partner_name]
-            yield from self.generate_bids(partner, resource, currency, trade_willingness)
-            yield from self.generate_asks(partner, resource, currency, trade_willingness)
+    def diplomatic_orders(self, partner_name: str, resource: Resource, currency: Resource):
+        personality = self.countries_by_name[partner_name]['personality'][0]
+        if personality not in PERSONALITY_TRADE_WILLINGNESS:
+            print(f"{partner_name} has unknown personality {personality}")
+            print()
+            return
+        trade_willingness = PERSONALITY_TRADE_WILLINGNESS[personality]
+        partner = self.countries_by_name[partner_name]
+        yield from self.generate_bids(partner, resource, currency, trade_willingness)
+        yield from self.generate_asks(partner, resource, currency, trade_willingness)
 
     def proposer_usable_stockpiles(self):
             # TODO: handle more gracefully
@@ -321,7 +320,9 @@ if __name__ == '__main__':
         gamestate = json.load(f)
 
     t = TradeFinder(gamestate, args.proposer)
-    orders = list(t.diplomatic_orders(args.optimize, resources_to_check))
+    orders = []
+    for partner_name,resource in tqdm(list(itertools.product(t.friendly_enough_to_trade(), resources_to_check))):
+        orders.extend(t.diplomatic_orders(partner_name, resource, args.optimize))
     for resource in resources_to_check:
         orders.extend(t.internal_market_orders(resource, args.market_fee, args.always_show_market))
 
