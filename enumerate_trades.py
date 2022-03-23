@@ -216,6 +216,20 @@ class TradeFinder:
             yield from self.generate_bids(partner, resource, currency, trade_willingness)
             yield from self.generate_asks(partner, resource, currency, trade_willingness)
 
+    def proposer_usable_stockpiles(self):
+            # TODO: handle more gracefully
+        proposer_stockpiles = {}
+        for resource in Resource:
+            stock = t.proposer_resources[resource]
+            # print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
+            if balance(t.proposer, resource) < 0:
+                stock += balance(t.proposer, resource)
+                # print(f'  (effectively {stock})')
+            proposer_stockpiles[resource] = stock
+        return proposer_stockpiles
+
+
+
 def income(country, resource: Resource):
     return sum(
         float(d[0][resource.value][0])
@@ -311,15 +325,7 @@ if __name__ == '__main__':
     orders = list(t.diplomatic_orders(args.optimize))
     orders.extend(t.internal_market_orders(args.market_fee, args.always_show_market))
 
-    # TODO: handle more gracefully
-    proposer_stockpiles = {}
-    for resource in Resource:
-        stock = t.proposer_resources[resource]
-        # print(f"{resource}: {proposer['name'][0]} has {stock} + {balance(proposer,resource)} {resource.value}")
-        if balance(t.proposer, resource) < 0:
-            stock += balance(t.proposer, resource)
-            # print(f'  (effectively {stock})')
-        proposer_stockpiles[resource] = stock
+    proposer_stockpiles = t.proposer_usable_stockpiles()
 
     all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpiles[o.resource]]
     all_asks = [o for o in orders if o.type == TradeType.ASK]
