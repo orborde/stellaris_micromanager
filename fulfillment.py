@@ -20,16 +20,11 @@ def fulfill(
 ) -> List[Offer]:
     assert all(all(o.type == TradeType.ASK for o in offers) for offers in original_asks_by_currency.values())
 
-    # TODO: this is banans
-    currency_paths = collections.defaultdict(collections.defaultdict)
-    for currency, offers in original_asks_by_currency.items():
-        outbound = collections.defaultdict(list)
-        for offer in offers:
-            outbound[offer.resource].append(offer)
-        for k in outbound:
-            outbound[k] = sorted(outbound[k], key=lambda o: o.currency)
-        currency_paths[currency] = outbound
-    
+    sorted_asks_by_currency = {
+        currency: sorted(offers, key=lambda o: o.currency)
+        for currency, offers in original_asks_by_currency.items()
+    }
+
     def helper(offer_path: List[Offer]) -> Optional[List[Offer]]:
         if len(offer_path) > 0:
             currency_resource = offer_path[-1].resource
@@ -42,24 +37,21 @@ def fulfill(
             usable_currency_amount = math.inf
         
         unbuyable_resources = set(o.resource for o in offer_path).union([original_currency])
-        for resource_to_buy, offers in currency_paths[currency_resource].items():
-            if resource_to_buy in unbuyable_resources:
+        for offer in sorted_asks_by_currency[currency_resource]:
+            if offer.resource in unbuyable_resources:
                 continue
 
-            for offer in offers:
-                assert offer.resource == resource_to_buy
-            
-                if offer.currency > usable_currency_amount:
-                    continue
+            if offer.currency > usable_currency_amount:
+                continue
 
-                new_path = offer_path + [offer]
-                if resource_to_buy == desired_resource:
-                    if offer.amount >= desired_amount:
-                        return new_path
-                else:
-                    result = helper(new_path)
-                    if result is not None:
-                        return result
+            new_path = offer_path + [offer]
+            if offer.resource == desired_resource:
+                if offer.amount >= desired_amount:
+                    return new_path
+            else:
+                result = helper(new_path)
+                if result is not None:
+                    return result
         
         return None
 
