@@ -32,7 +32,7 @@ if __name__ == '__main__':
         currencies = [Resource(r) for r in args.currencies.split(',')]
 
     gamestate = json.load(args.input)
-
+    print(gamestate['date'][0])
     tf = TradeFinder(gamestate, args.proposer)
     for currency in currencies:
         if currency == args.resource:
