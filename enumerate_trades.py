@@ -309,6 +309,7 @@ if __name__ == '__main__':
     parser.add_argument("--market_fee", type=float, default=0.3)
     parser.add_argument("--always_show_market", action="store_true")
     parser.add_argument("--optimize", type=Resource, default=Resource.energy)
+    parser.add_argument("--submit_socket", type=pathlib.Path, default=None)
     args = parser.parse_args()
 
     if args.resources == 'all':
@@ -375,6 +376,25 @@ if __name__ == '__main__':
         print(ask)
         print(min(bid.amount, ask.amount), profit(bid, ask))
         print()
+
+    if args.submit_socket is not None:
+        import socket
+        best_match = matches[0]
+        bid, ask = best_match
+        bid_cmd = f'{t.ids_by_name[bid.who]} {bid.resource.value} {bid.amount} {args.optimize.value} {bid.currency}'
+        ask_cmd = f'{t.ids_by_name[ask.who]} {args.optimize.value} {ask.currency} {ask.resource.value} {ask.amount}'
+        print('SUBMITTING FOR EXECUTION:')
+        print(bid_cmd)
+        print(ask_cmd)
+
+        for line in [bid_cmd, ask_cmd]:
+            # Open unix domain socket to server
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            sock.connect(str(args.submit_socket))
+            sock.sendall((line+'\n').encode('utf-8'))
+            sock.close()
+            print(f'SENT: {line}')
+
 
     if args.print_full_book:
         for o in sorted(orders, key=lambda o: o.price()):
