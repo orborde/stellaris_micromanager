@@ -3,15 +3,14 @@
 import enum
 from typing import *
 
-
 UDENOM = 100000
 def udenom(x) -> int:
     return int(x * UDENOM)
 
-TRADE_VALUE_RESOURCE_INCOME_BASE = 50*UDENOM	# used for calculating resource income effect (lower = more value reduction from higher income)
-TRADE_VALUE_RESOURCE = 2*UDENOM	# for minerals and energy (scaled by income & need)
-# TRADE_VALUE_RESOURCE_MONTHLY_MULT = 0.5 # value of monthly resources is multiplied by this compared to lump-sum
-OFFER_TRADE_MIN_RESOURCE_THRESHOLD = int(0.8*UDENOM) # if ai want for an accumulative resource is at least max * this it won't trade away that resource
+TRADE_VALUE_RESOURCE_INCOME_BASE = 50*UDENOM
+TRADE_VALUE_RESOURCE = 2*UDENOM
+# TRADE_VALUE_RESOURCE_MONTHLY_MULT = 0.5
+OFFER_TRADE_MIN_RESOURCE_THRESHOLD = int(0.8*UDENOM)
 
 class Resource(enum.Enum):
     energy = 'energy'
