@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 from dataclasses import dataclass
+import copy
 import itertools
 import json
 import pathlib
-
 from tqdm import tqdm
+from typing import *
 
 from trade_value import *
 
@@ -296,6 +297,48 @@ MARKET_BASE_PRICES = {
     Resource.sr_dark_matter: 20,
 }
 
+def profit(bid: Offer, ask: Offer):
+    assert bid.type == TradeType.BID
+    assert ask.type == TradeType.ASK
+    return bid.currency - ask.currency
+
+def find_execution_plan(
+        matches: List[Tuple[Offer, Offer]],
+        currency: Resource,
+        proposer_stockpiles: Dict[Resource, float],
+        sendable_resources_by_country: Dict[str, Dict[Resource, float]],
+        ) -> List[Tuple[Offer, Offer]]:
+    proposer_stockpiles = copy.deepcopy(proposer_stockpiles)
+    sendable_resources_by_country = copy.deepcopy(sendable_resources_by_country)
+    matches = sorted(matches, key=lambda m: profit(m[0], m[1]), reverse=True)
+    for bid,ask in matches:
+        resource = bid.resource
+        assert ask.resource == resource
+        if proposer_stockpiles[resource] < bid.amount:
+            continue
+        if sendable_resources_by_country[bid.who][currency] < bid.currency:
+            continue
+
+        if proposer_stockpiles[currency] < ask.currency:
+            continue
+        if sendable_resources_by_country[ask.who][resource] < ask.amount:
+            continue
+
+        # print(proposer_stockpiles)
+        # print(bid.who, sendable_resources_by_country[bid.who])
+        # print(ask.who, sendable_resources_by_country[ask.who])
+        # print()
+
+        yield bid,ask
+
+        # Note that we only deduct resources here.
+        proposer_stockpiles[resource] -= bid.amount
+        proposer_stockpiles[currency] -= ask.currency
+        sendable_resources_by_country[bid.who][currency] -= bid.currency
+        sendable_resources_by_country[ask.who][resource] -= ask.amount
+
+    
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -343,12 +386,6 @@ if __name__ == '__main__':
             (ask.currency <= proposer_stockpiles[args.optimize])
         )
 
-    def profit(bid: Offer, ask: Offer):
-        assert bid.type == TradeType.BID
-        assert ask.type == TradeType.ASK
-        assert executable(bid, ask)
-        return bid.currency - ask.currency
-
     date = gamestate['date'][0]
     print(f'DATE: {date}')
     print(f'{len(all_bids)} bids, {len(all_asks)} asks')
@@ -377,23 +414,40 @@ if __name__ == '__main__':
         print(min(bid.amount, ask.amount), profit(bid, ask))
         print()
 
+    sendable_resources_by_country = {
+        name: {r: t.sendable_resources_for(t.countries_by_name[name], r) for r in Resource}
+        for name in t.friendly_enough_to_trade()
+    }
+
+    execution_plan = list(find_execution_plan(
+        matches,
+        args.optimize,
+        proposer_stockpiles,
+        sendable_resources_by_country,
+        ))
+    print('Execution plan:')
+    for bid,ask in execution_plan:
+        print(bid)
+        print(ask)
+        print(min(bid.amount, ask.amount), profit(bid, ask))
+        print()
+
     if args.submit_socket is not None:
         import socket
-        best_match = matches[0]
-        bid, ask = best_match
-        bid_cmd = f'{t.ids_by_name[bid.who]} {bid.resource.value} {bid.amount} {args.optimize.value} {bid.currency}'
-        ask_cmd = f'{t.ids_by_name[ask.who]} {args.optimize.value} {ask.currency} {ask.resource.value} {ask.amount}'
-        print('SUBMITTING FOR EXECUTION:')
-        print(bid_cmd)
-        print(ask_cmd)
+        for bid,ask in execution_plan:
+            bid_cmd = f'{t.ids_by_name[bid.who]} {bid.resource.value} {bid.amount} {args.optimize.value} {bid.currency}'
+            ask_cmd = f'{t.ids_by_name[ask.who]} {args.optimize.value} {ask.currency} {ask.resource.value} {ask.amount}'
+            print('SUBMITTING FOR EXECUTION:')
+            print(bid_cmd)
+            print(ask_cmd)
 
-        for line in [bid_cmd, ask_cmd]:
-            # Open unix domain socket to server
-            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            sock.connect(str(args.submit_socket))
-            sock.sendall((line+'\n').encode('utf-8'))
-            sock.close()
-            print(f'SENT: {line}')
+            for line in [bid_cmd, ask_cmd]:
+                # Open unix domain socket to server
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                sock.connect(str(args.submit_socket))
+                sock.sendall((line+'\n').encode('utf-8'))
+                sock.close()
+                print(f'SENT: {line}')
 
 
     if args.print_full_book:
