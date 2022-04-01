@@ -453,7 +453,7 @@ if __name__ == '__main__':
     if args.submit_socket is not None:
         print('SUBMITTING FOR EXECUTION!')
         import socket
-        for bid,ask in execution_plan:
+        for bid,ask in tqdm(execution_plan):
             bid_cmd = f'{t.ids_by_name[bid.who]} {bid.resource.value} {bid.amount} {args.optimize.value} {bid.currency}'
             ask_cmd = f'{t.ids_by_name[ask.who]} {args.optimize.value} {ask.currency} {ask.resource.value} {ask.amount}'
 
