@@ -376,16 +376,18 @@ if __name__ == '__main__':
         gamestate = json.load(f)
 
     t = TradeFinder(gamestate, args.proposer)
-    orders = []
+    diplomatic_orders = []
     for partner_name,resource in tqdm(list(itertools.product(t.friendly_enough_to_trade(), resources_to_check))):
-        orders.extend(t.diplomatic_orders(partner_name, resource, args.optimize))
+        diplomatic_orders.extend(t.diplomatic_orders(partner_name, resource, args.optimize))
+    market_orders = []
     for resource in resources_to_check:
-        orders.extend(t.internal_market_orders(resource, args.market_fee, args.always_show_market))
+        market_orders.extend(t.internal_market_orders(resource, args.market_fee, args.always_show_market))
+    all_orders = diplomatic_orders + market_orders
 
     proposer_stockpiles = t.proposer_usable_stockpiles()
 
-    all_bids = [o for o in orders if o.type == TradeType.BID and o.amount <= proposer_stockpiles[o.resource]]
-    all_asks = [o for o in orders if o.type == TradeType.ASK]
+    all_bids = [o for o in all_orders if o.type == TradeType.BID and o.amount <= proposer_stockpiles[o.resource]]
+    all_asks = [o for o in all_orders if o.type == TradeType.ASK]
 
     def executable(bid: Offer, ask: Offer):
         assert bid.type == TradeType.BID
@@ -402,8 +404,7 @@ if __name__ == '__main__':
     print(f'DATE: {date}')
     print(f'{len(all_bids)} bids, {len(all_asks)} asks')
 
-    matches = []
-    for resource in tqdm(resources_to_check):
+    for resource in resources_to_check:
         bids = [o for o in all_bids if o.resource == resource]
         asks = [o for o in all_asks if o.resource == resource]
         print(f'{resource.value}: {len(bids)} bids, {len(asks)} asks')
@@ -411,6 +412,11 @@ if __name__ == '__main__':
             print('  ', bid)
         for ask in sorted(asks, key=lambda o: o.price())[:args.book_size]:
             print('  ', ask)
+
+    matches = []
+    for resource in tqdm(resources_to_check):
+        bids = [o for o in diplomatic_orders if o.type == TradeType.BID and o.resource == resource]
+        asks = [o for o in diplomatic_orders if o.type == TradeType.ASK and o.resource == resource]
 
         matches.extend(
             (bid, ask)
@@ -460,5 +466,5 @@ if __name__ == '__main__':
 
 
     if args.print_full_book:
-        for o in sorted(orders, key=lambda o: o.price()):
+        for o in sorted(all_orders, key=lambda o: o.price()):
             print(o)
