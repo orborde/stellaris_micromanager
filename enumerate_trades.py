@@ -48,6 +48,18 @@ PERSONALITY_TRADE_WILLINGNESS = {
     'servitors': 0.9,
     'fanatic_befrienders': 1.0,
     'became_the_crisis': 0.5,
+
+    'fallen_empire_spiritualist': 0.33,
+    'fallen_empire_materialist': 0.5,
+    'fallen_empire_xenophobe': 0.0,
+    'fallen_empire_xenophile': 0.5,
+    'awakened_fallen_empire_spiritualist': 0.33,
+    'awakened_fallen_empire_materialist': 0.5,
+    'awakened_fallen_empire_xenophobe': 0.0,
+    'awakened_fallen_empire_xenophile': 0.5,
+    'fallen_empire_machine': 0.5,
+    'awakened_fallen_empire_machine': 0.5,
+    'berserk_fallen_empire_machine': 0.0,
 }
 
 class TradeFinder:
