@@ -445,13 +445,11 @@ if __name__ == '__main__':
         print()
 
     if args.submit_socket is not None:
+        print('SUBMITTING FOR EXECUTION!')
         import socket
         for bid,ask in execution_plan:
             bid_cmd = f'{t.ids_by_name[bid.who]} {bid.resource.value} {bid.amount} {args.optimize.value} {bid.currency}'
             ask_cmd = f'{t.ids_by_name[ask.who]} {args.optimize.value} {ask.currency} {ask.resource.value} {ask.amount}'
-            print('SUBMITTING FOR EXECUTION:')
-            print(bid_cmd)
-            print(ask_cmd)
 
             for line in [bid_cmd, ask_cmd]:
                 # Open unix domain socket to server
@@ -459,7 +457,6 @@ if __name__ == '__main__':
                 sock.connect(str(args.submit_socket))
                 sock.sendall((line+'\n').encode('utf-8'))
                 sock.close()
-                print(f'SENT: {line}')
 
 
     if args.print_full_book:
