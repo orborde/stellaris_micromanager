@@ -304,7 +304,7 @@ if __name__ == '__main__':
     parser.add_argument("resources", type=str,help=','.join([r.value for r in Resource]+['all']))
     parser.add_argument("--print_full_book", action="store_true")
     parser.add_argument("--book_size", type=int, default=3)
-    parser.add_argument("--matches_to_show", type=int, default=3)
+    parser.add_argument("--matches_to_show", type=int, default=0)
     parser.add_argument("--progress", action="store_true")
     parser.add_argument("--market_fee", type=float, default=0.3)
     parser.add_argument("--always_show_market", action="store_true")
